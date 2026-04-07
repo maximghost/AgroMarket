@@ -1,0 +1,20 @@
+{
+	"name": "agromarket-backend",
+	"version": "1.0.0",
+	"type": "module",
+	"description": "API backend pour AgroMarket",
+	"main": "src/server.js",
+	"scripts": {
+		"start": "node src/server.js",
+		"dev": "nodemon src/server.js"
+	},
+	"dependencies": {
+		"cors": "^2.8.6",
+		"dotenv": "^17.4.1",
+		"express": "^5.2.1",
+		"mongoose": "^9.4.1"
+	},
+	"devDependencies": {
+		"nodemon": "^3.1.14"
+	}
+}
