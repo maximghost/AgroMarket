@@ -1,6 +1,7 @@
 
-import Catalogue from './pages/Catalogue'
+
 import {Routes, Route, BrowserRouter } from 'react-router-dom';
+import Catalogue from './pages/Catalogue'
 import LayoutProducteur from './layouts/LayoutProducteur';
 import DashboardProducteur from './pages/producteur/DashboardProducteur';
 import MesProduits from './pages/producteur/MesProduits';
@@ -9,6 +10,12 @@ import ModifierProduit from './pages/producteur/ModifierProduit';
 import CommandesReçues from './pages/producteur/CommandesReçues';
 import DetailCommande from './pages/producteur/DetailCommande';
 import HomePage from './pages/landing/HomePage';
+import LoginPage from './pages/landing/auth/LoginPage';
+import RegisterPage from './pages/landing/auth/RegisterPage';
+import ForgotPassword from './pages/landing/auth/ForgotPassword';
+import ResetPassword from './pages/landing/auth/ResetPassword';
+import VerifyEmail from './pages/landing/auth/VerifyEmail';
+
 
 function Accueil() {
   return (
@@ -34,7 +41,14 @@ function App() {
   return (
 
       <Routes>
+        
         <Route path="/" element={<HomePage/>} />
+        {/* Pages d'authentification */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verify-account/:token" element={<VerifyEmail />} />
         <Route path="/catalogue" element={<Catalogue />} />
         <Route path="/producteur" element={<LayoutProducteur />}>
           <Route index element={<DashboardProducteur />} />
