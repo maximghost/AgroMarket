@@ -8,6 +8,7 @@ import AjouterProduit from './pages/producteur/AjouterProduit';
 import ModifierProduit from './pages/producteur/ModifierProduit';
 import CommandesReçues from './pages/producteur/CommandesReçues';
 import DetailCommande from './pages/producteur/DetailCommande';
+import HomePage from './pages/landing/HomePage';
 
 function Accueil() {
   return (
@@ -33,7 +34,7 @@ function App() {
   return (
 
       <Routes>
-        <Route path="/" element={<Accueil />} />
+        <Route path="/" element={<HomePage/>} />
         <Route path="/catalogue" element={<Catalogue />} />
         <Route path="/producteur" element={<LayoutProducteur />}>
           <Route index element={<DashboardProducteur />} />
