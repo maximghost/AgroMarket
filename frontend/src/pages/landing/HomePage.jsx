@@ -38,7 +38,7 @@ const HomePage = () => {
             <h1 className="text-5xl md:text-6xl font-bold leading-tight text-gray-900">
               Des Produits<br />
               Agricoles Locaux,<br />
-              <span className="text-[#f59e0b]">Qualité Garantie</span> à Votre Table
+              <span className="text-[#FF6B00]">Qualité Garantie</span> à Votre Table
             </h1>
             <p className="mt-6 text-lg text-gray-600 max-w-lg">
               Découvrez les meilleures saveurs d’Afrique de l’Ouest. Soutenez les agriculteurs locaux tout en profitant de produits frais, authentiques et entièrement traçables.

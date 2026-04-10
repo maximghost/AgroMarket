@@ -1,6 +1,6 @@
 
 import Catalogue from './pages/Catalogue'
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import {Routes, Route, BrowserRouter } from 'react-router-dom';
 import LayoutProducteur from './layouts/LayoutProducteur';
 import DashboardProducteur from './pages/producteur/DashboardProducteur';
 import MesProduits from './pages/producteur/MesProduits';
@@ -31,10 +31,10 @@ function Accueil() {
 
 function App() {
   return (
-    <BrowserRouter>
+
       <Routes>
         <Route path="/" element={<Accueil />} />
-        <Route path="/" element={<Catalogue />} />
+        <Route path="/catalogue" element={<Catalogue />} />
         <Route path="/producteur" element={<LayoutProducteur />}>
           <Route index element={<DashboardProducteur />} />
           <Route path="dashboard" element={<DashboardProducteur />} />
@@ -45,7 +45,7 @@ function App() {
           <Route path="commandes/:id" element={<DetailCommande />} />
         </Route>
       </Routes>
-    </BrowserRouter>
+
   );
 }
 

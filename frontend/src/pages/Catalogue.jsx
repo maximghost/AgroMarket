@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import CartesProduits from '../components/CartesProduits'
+import Header from '../components/Layout/Header'
 
 const imagesPates = import.meta.glob('../assets/images/pates/*', { eager: true })
 const imagesSauces = import.meta.glob('../assets/images/sauces/*', { eager: true })
@@ -460,58 +461,51 @@ export default function Catalogue() {
   })
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8">
+    <div>
+      {/* Header en haut */}
+      *<Header onAuthClick={(type) => console.log(type)} />
 
-      {/* ===== TITRE DE LA PAGE ===== */}
-      <h1 className="text-3xl font-bold text-green-700 mb-6">Catalogue</h1>
+      <div className="max-w-7xl mx-auto px-6 py-8">
 
-      {/* ===== BARRE DE RECHERCHE ===== */}
-      {/* relative/absolute : pour positionner l'icône loupe à l'intérieur */}
-      <div className="relative mb-6 max-w-md">
-        <input
-          type="text"
-          placeholder="Rechercher des produits..."
-          value={recherche}
-          onChange={e => setRecherche(e.target.value)}
-          // ← onChange met à jour "recherche" à chaque lettre tapée
-          className="w-full border border-gray-300 rounded-full px-5 py-2.5 pr-12 outline-none focus:border-green-600"
-        />
-        <span className="absolute right-4 top-2.5 text-gray-400 text-lg">🔍</span>
+        {/* Barre de recherche à droite */}
+        <div className="flex justify-end mb-6">
+          <div className="relative w-72">
+            <input
+              type="text"
+              placeholder="Rechercher des produits..."
+              value={recherche}
+              onChange={e => setRecherche(e.target.value)}
+              className="w-full border border-gray-300 rounded-full px-5 py-2.5 pr-12 outline-none focus:border-green-600"
+            />
+            <span className="absolute right-4 top-2.5 text-gray-400 text-lg">🔍</span>
+          </div>
+        </div>
+
+        {/* Filtres catégories */}
+        <div className="flex gap-3 mb-8">
+          {categories.map(cat => (
+            <button
+              key={cat}
+              onClick={() => setCategory(cat)}
+              className={`px-5 py-2 rounded-full text-sm font-medium transition ${
+                category === cat? 'bg-green-700 text-white': 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`} > {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Grille produits */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {produitsFiltres.map(produit => (
+            <CartesProduits key={produit.id} produit={produit} />
+          ))}
+        </div>
+
+        {produitsFiltres.length === 0 && (
+          <p className="text-center text-gray-400 mt-12">Aucun produit trouvé.</p>
+        )}
+
       </div>
-
-      {/* ===== FILTRES CATÉGORIES ===== */}
-      <div className="flex gap-3 mb-8">
-        {/* On boucle sur le tableau categories pour créer un bouton par catégorie */}
-        {categories.map(cat => (
-          <button
-            key={cat}
-            onClick={() => setCategory(cat)}
-            // Si c'est la catégorie active → fond vert, sinon → fond gris
-            className={`px-5 py-2 rounded-full text-sm font-medium transition ${
-              category === cat
-                ? 'bg-green-700 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            {cat}
-          </button>
-        ))}
-      </div>
-
-      {/* ===== GRILLE DE PRODUITS ===== */}
-      {/* Sur mobile : 1 colonne, tablette : 2, desktop : 3 ou 4 */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {produitsFiltres.map(produit => (
-          // On passe chaque produit à ProductCard via la prop "produit"
-          <CartesProduits key={produit._id} produit={produit} />
-        ))}
-      </div>
-
-      {/* Message si aucun produit trouvé */}
-      {produitsFiltres.length === 0 && (
-        <p className="text-center text-gray-400 mt-12">Aucun produit trouvé.</p>
-      )}
-
     </div>
   )
 }
