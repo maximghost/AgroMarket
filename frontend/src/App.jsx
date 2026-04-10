@@ -1,4 +1,3 @@
-
 import Catalogue from './pages/Catalogue'
 import CartPage from './pages/CartPage'
 import OrderConfirmationPage from './pages/OrderConfirmationPage'
