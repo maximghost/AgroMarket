@@ -1,324 +1,312 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-const CommandesRecues = () => {
+const SHARED = `
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:wght@700;900&display=swap');
+  :root{--soil:#1a1208;--bark:#2c1f0e;--moss:#4a5e2a;--leaf:#6b8f3e;--sage:#8fb85a;--cream:#f5efe6;--sand:#e8d9c4;--amber:#c8873a;--light:#fdfaf6;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Space Grotesk',sans-serif;}
+`;
+
+const MOCK = [
+  { id:'CMD-001', client:'Jean Dupont', email:'jean.dupont@email.com', telephone:'06 12 34 56 78', produits:[{nom:'Tomates bio',quantite:2,prix:3.50,lot:'A1-2405'}], montantTotal:7.00, date:'2026-04-09T10:30:00', statut:'en_attente', adresseLivraison:'12 rue des Lilas, 75001 Paris' },
+  { id:'CMD-002', client:'Marie Curie', email:'marie.curie@email.com', telephone:'06 98 76 54 32', produits:[{nom:'Courgettes',quantite:3,prix:2.80,lot:'B2-2406'}], montantTotal:8.40, date:'2026-04-08T14:15:00', statut:'confirmee', adresseLivraison:'5 avenue des Roses, 69002 Lyon' },
+  { id:'CMD-003', client:'Pierre Martin', email:'pierre.martin@email.com', telephone:'07 11 22 33 44', produits:[{nom:'Miel de printemps',quantite:2,prix:12.00,lot:'C3-2407'},{nom:'Tomates bio',quantite:1,prix:3.50,lot:'A1-2405'}], montantTotal:27.50, date:'2026-04-07T09:45:00', statut:'expediee', adresseLivraison:'8 rue de la Gare, 44000 Nantes' },
+  { id:'CMD-004', client:'Sophie Dubois', email:'sophie.dubois@email.com', telephone:'06 55 66 77 88', produits:[{nom:'Courgettes',quantite:1,prix:2.80,lot:'B2-2406'}], montantTotal:2.80, date:'2026-04-06T16:20:00', statut:'livree', adresseLivraison:'15 boulevard Victor Hugo, 13001 Marseille' },
+];
+
+const STATUT_CONFIG = {
+  en_attente: { label:'En attente', color:'#c8873a', bg:'rgba(200,135,58,0.1)', border:'rgba(200,135,58,0.25)', dot:'#c8873a' },
+  confirmee:  { label:'Confirmée',  color:'#3a7bc8', bg:'rgba(58,123,200,0.1)', border:'rgba(58,123,200,0.25)', dot:'#3a7bc8' },
+  expediee:   { label:'Expédiée',   color:'#7b3ac8', bg:'rgba(123,58,200,0.1)', border:'rgba(123,58,200,0.25)', dot:'#7b3ac8' },
+  livree:     { label:'Livrée',     color:'#3a8f4a', bg:'rgba(58,143,74,0.1)',  border:'rgba(58,143,74,0.25)',  dot:'#3a8f4a' },
+  rejetee:    { label:'Rejetée',    color:'#c83a3a', bg:'rgba(200,58,58,0.1)',  border:'rgba(200,58,58,0.25)',  dot:'#c83a3a' },
+};
+
+export default function CommandesRecues() {
   const [commandes, setCommandes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('toutes'); // toutes, en_attente, confirmee, expediee, livree
-  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading]   = useState(true);
+  const [filter, setFilter]     = useState('toutes');
+  const [search, setSearch]     = useState('');
 
-  // Simulation de chargement des commandes (à remplacer par API)
-  useEffect(() => {
-    setTimeout(() => {
-      setCommandes([
-        {
-          id: 'CMD-001',
-          client: 'Jean Dupont',
-          email: 'jean.dupont@email.com',
-          telephone: '06 12 34 56 78',
-          produits: [
-            { nom: 'Tomates bio', quantite: 2, prix: 3.50, lot: 'A1-2405' }
-          ],
-          montantTotal: 7.00,
-          date: '2026-04-09T10:30:00',
-          statut: 'en_attente',
-          adresseLivraison: '12 rue des Lilas, 75001 Paris'
-        },
-        {
-          id: 'CMD-002',
-          client: 'Marie Curie',
-          email: 'marie.curie@email.com',
-          telephone: '06 98 76 54 32',
-          produits: [
-            { nom: 'Courgettes', quantite: 3, prix: 2.80, lot: 'B2-2406' }
-          ],
-          montantTotal: 8.40,
-          date: '2026-04-08T14:15:00',
-          statut: 'confirmee',
-          adresseLivraison: '5 avenue des Roses, 69002 Lyon'
-        },
-        {
-          id: 'CMD-003',
-          client: 'Pierre Martin',
-          email: 'pierre.martin@email.com',
-          telephone: '07 11 22 33 44',
-          produits: [
-            { nom: 'Miel de printemps', quantite: 2, prix: 12.00, lot: 'C3-2407' },
-            { nom: 'Tomates bio', quantite: 1, prix: 3.50, lot: 'A1-2405' }
-          ],
-          montantTotal: 27.50,
-          date: '2026-04-07T09:45:00',
-          statut: 'expediee',
-          adresseLivraison: '8 rue de la Gare, 44000 Nantes'
-        },
-        {
-          id: 'CMD-004',
-          client: 'Sophie Dubois',
-          email: 'sophie.dubois@email.com',
-          telephone: '06 55 66 77 88',
-          produits: [
-            { nom: 'Courgettes', quantite: 1, prix: 2.80, lot: 'B2-2406' }
-          ],
-          montantTotal: 2.80,
-          date: '2026-04-06T16:20:00',
-          statut: 'livree',
-          adresseLivraison: '15 boulevard Victor Hugo, 13001 Marseille'
-        }
-      ]);
-      setLoading(false);
-    }, 500);
-  }, []);
+  useEffect(() => { setTimeout(() => { setCommandes(MOCK); setLoading(false); }, 400); }, []);
 
-  const getStatutBadge = (statut) => {
-    const styles = {
-      en_attente: 'bg-yellow-100 text-yellow-800',
-      confirmee: 'bg-blue-100 text-blue-800',
-      expediee: 'bg-purple-100 text-purple-800',
-      livree: 'bg-green-100 text-green-800',
-      rejetee: 'bg-red-100 text-red-800'
-    };
-    const labels = {
-      en_attente: 'En attente',
-      confirmee: 'Confirmée',
-      expediee: 'Expédiée',
-      livree: 'Livrée',
-      rejetee: 'Rejetée'
-    };
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs font-medium ${styles[statut] || styles.en_attente}`}>
-        {labels[statut] || statut}
-      </span>
-    );
-  };
+  const handleConfirmer = (id) => setCommandes(c => c.map(x => x.id===id ? {...x,statut:'confirmee'} : x));
+  const handleRejeter   = (id) => { if(window.confirm('Rejeter cette commande ?')) setCommandes(c => c.map(x => x.id===id ? {...x,statut:'rejetee'} : x)); };
+  const handleExpedier  = (id) => setCommandes(c => c.map(x => x.id===id ? {...x,statut:'expediee'} : x));
 
-  const getStatutColor = (statut) => {
-    const colors = {
-      en_attente: 'border-yellow-500 bg-yellow-50',
-      confirmee: 'border-blue-500 bg-blue-50',
-      expediee: 'border-purple-500 bg-purple-50',
-      livree: 'border-green-500 bg-green-50',
-      rejetee: 'border-red-500 bg-red-50'
-    };
-    return colors[statut] || colors.en_attente;
-  };
-
-  const handleConfirmer = (id) => {
-    setCommandes(commandes.map(cmd => 
-      cmd.id === id ? { ...cmd, statut: 'confirmee' } : cmd
-    ));
-  };
-
-  const handleRejeter = (id) => {
-    if (window.confirm('Confirmez-vous le rejet de cette commande ?')) {
-      setCommandes(commandes.map(cmd => 
-        cmd.id === id ? { ...cmd, statut: 'rejetee' } : cmd
-      ));
-    }
-  };
-
-  const handleExpedier = (id) => {
-    setCommandes(commandes.map(cmd => 
-      cmd.id === id ? { ...cmd, statut: 'expediee' } : cmd
-    ));
-  };
-
-  // Filtrage des commandes
-  const filteredCommandes = commandes.filter(cmd => {
-    if (filter !== 'toutes' && cmd.statut !== filter) return false;
-    if (searchTerm && !cmd.id.toLowerCase().includes(searchTerm.toLowerCase()) && 
-        !cmd.client.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+  const filtered = commandes.filter(c => {
+    if (filter !== 'toutes' && c.statut !== filter) return false;
+    if (search && !c.id.toLowerCase().includes(search.toLowerCase()) && !c.client.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
 
   const stats = {
-    total: commandes.length,
-    en_attente: commandes.filter(c => c.statut === 'en_attente').length,
-    a_expedier: commandes.filter(c => c.statut === 'confirmee').length,
-    revenus: commandes.reduce((sum, c) => sum + c.montantTotal, 0)
+    total:       commandes.length,
+    en_attente:  commandes.filter(c => c.statut === 'en_attente').length,
+    a_expedier:  commandes.filter(c => c.statut === 'confirmee').length,
+    revenus:     commandes.reduce((s, c) => s + c.montantTotal, 0),
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">Chargement des commandes...</div>
-      </div>
-    );
-  }
+  if (loading) return <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'60vh'}}><div style={{width:36,height:36,border:'3px solid #e8d9c4',borderTop:'3px solid #6b8f3e',borderRadius:'50%',animation:'spin 1s linear infinite'}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style></div>;
+
+  const FILTERS = ['toutes','en_attente','confirmee','expediee','livree'];
 
   return (
-    <div>
-      {/* En-tête */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Commandes reçues</h1>
-        <p className="text-gray-500 text-sm mt-1">Gérez les commandes de vos produits</p>
-      </div>
+    <>
+      <style>{SHARED}{`
+        .page-title { font-family:'Playfair Display',serif; font-size:clamp(22px,4vw,32px); font-weight:900; color:var(--soil); }
+        .page-sub   { font-size:13px; color:#9a8a7a; margin-top:5px; margin-bottom:24px; }
 
-      {/* Cartes statistiques */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
-          <p className="text-sm text-gray-500">Total commandes</p>
-          <p className="text-2xl font-bold">{stats.total}</p>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4 border-l-4 border-yellow-500">
-          <p className="text-sm text-gray-500">En attente</p>
-          <p className="text-2xl font-bold text-yellow-600">{stats.en_attente}</p>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4 border-l-4 border-purple-500">
-          <p className="text-sm text-gray-500">À expédier</p>
-          <p className="text-2xl font-bold text-purple-600">{stats.a_expedier}</p>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4 border-l-4 border-green-500">
-          <p className="text-sm text-gray-500">Revenus totaux</p>
-          <p className="text-2xl font-bold text-green-600">{stats.revenus.toFixed(2)} €</p>
-        </div>
-      </div>
+        .stat-row { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:24px; }
+        @media(min-width:900px){ .stat-row { grid-template-columns:repeat(4,1fr); } }
 
-      {/* Filtres et recherche */}
-      <div className="bg-white rounded-lg shadow p-4 mb-6">
-        <div className="flex flex-col sm:flex-row gap-4 justify-between">
-          <div className="flex gap-2 flex-wrap">
-            <button
-              onClick={() => setFilter('toutes')}
-              className={`px-3 py-1.5 rounded-lg text-sm transition ${
-                filter === 'toutes' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Toutes
-            </button>
-            <button
-              onClick={() => setFilter('en_attente')}
-              className={`px-3 py-1.5 rounded-lg text-sm transition ${
-                filter === 'en_attente' ? 'bg-yellow-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              En attente
-            </button>
-            <button
-              onClick={() => setFilter('confirmee')}
-              className={`px-3 py-1.5 rounded-lg text-sm transition ${
-                filter === 'confirmee' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Confirmées
-            </button>
-            <button
-              onClick={() => setFilter('expediee')}
-              className={`px-3 py-1.5 rounded-lg text-sm transition ${
-                filter === 'expediee' ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Expédiées
-            </button>
-            <button
-              onClick={() => setFilter('livree')}
-              className={`px-3 py-1.5 rounded-lg text-sm transition ${
-                filter === 'livree' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Livrées
-            </button>
+        .stat-chip {
+          background:#fff;
+          border-radius:14px;
+          padding:16px;
+          border:1px solid rgba(0,0,0,0.05);
+          display:flex;
+          flex-direction:column;
+          gap:4px;
+        }
+        .stat-chip-val  { font-family:'Playfair Display',serif; font-size:26px; font-weight:900; color:var(--soil); }
+        .stat-chip-key  { font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#9a8a7a; }
+
+        .toolbar {
+          background:#fff;
+          border-radius:14px;
+          padding:16px 20px;
+          margin-bottom:20px;
+          border:1px solid rgba(0,0,0,0.05);
+          display:flex;
+          flex-direction:column;
+          gap:12px;
+        }
+        @media(min-width:640px){ .toolbar { flex-direction:row; align-items:center; justify-content:space-between; } }
+
+        .filter-pills { display:flex; gap:6px; flex-wrap:wrap; }
+        .pill {
+          padding:6px 14px;
+          border-radius:20px;
+          font-size:12px;
+          font-weight:600;
+          border:1.5px solid;
+          cursor:pointer;
+          transition:all 0.15s;
+          background:none;
+          font-family:'Space Grotesk',sans-serif;
+        }
+        .pill.active-all    { background:var(--soil); color:#fff; border-color:var(--soil); }
+        .pill.inactive-all  { color:#9a8a7a; border-color:var(--sand); }
+        .pill.inactive-all:hover { background:var(--sand); }
+
+        .search-wrap { position:relative; }
+        .search-wrap input { border:1.5px solid var(--sand); border-radius:10px; padding:9px 14px 9px 36px; font-size:13px; font-family:'Space Grotesk',sans-serif; outline:none; width:100%; transition:border-color 0.2s; }
+        .search-wrap input:focus { border-color:var(--leaf); }
+        .search-wrap .ico { position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:14px; color:#9a8a7a; }
+
+        .orders-list { display:flex; flex-direction:column; gap:14px; }
+
+        .order-card {
+          background:#fff;
+          border-radius:16px;
+          border:1px solid rgba(0,0,0,0.05);
+          overflow:hidden;
+          transition:box-shadow 0.2s;
+        }
+        .order-card:hover { box-shadow:0 8px 24px rgba(0,0,0,0.08); }
+
+        .order-top {
+          padding:16px 20px;
+          display:flex;
+          flex-wrap:wrap;
+          justify-content:space-between;
+          align-items:flex-start;
+          gap:10px;
+          border-bottom:1px solid var(--cream);
+        }
+        .order-id {
+          font-family:'Playfair Display',serif;
+          font-size:17px;
+          font-weight:700;
+          color:var(--soil);
+          text-decoration:none;
+        }
+        .order-id:hover { color:var(--leaf); }
+        .order-date { font-size:11px; color:#9a8a7a; margin-top:2px; }
+
+        .statut-badge {
+          display:inline-flex;
+          align-items:center;
+          gap:5px;
+          padding:5px 12px;
+          border-radius:20px;
+          font-size:11px;
+          font-weight:700;
+          letter-spacing:0.5px;
+          border:1.5px solid;
+        }
+        .statut-dot { width:6px; height:6px; border-radius:50%; }
+
+        .order-amount {
+          font-family:'Playfair Display',serif;
+          font-size:20px;
+          font-weight:900;
+          color:var(--soil);
+        }
+
+        .order-body { padding:16px 20px; display:flex; flex-direction:column; gap:12px; }
+
+        .client-block {
+          background:var(--light);
+          border-radius:10px;
+          padding:12px 16px;
+          display:flex;
+          flex-wrap:wrap;
+          gap:16px;
+          font-size:12.5px;
+        }
+        .client-field strong { color:var(--soil); font-weight:700; }
+        .client-field span   { color:#7a6a5a; }
+
+        .produits-list { display:flex; flex-wrap:wrap; gap:6px; }
+        .produit-tag {
+          background:var(--cream);
+          border-radius:8px;
+          padding:5px 10px;
+          font-size:11.5px;
+          font-weight:600;
+          color:var(--bark);
+        }
+
+        .order-actions {
+          padding:14px 20px;
+          background:var(--light);
+          border-top:1px solid var(--cream);
+          display:flex;
+          flex-wrap:wrap;
+          gap:8px;
+          align-items:center;
+        }
+
+        .act-btn {
+          padding:8px 16px;
+          border-radius:9px;
+          font-size:12px;
+          font-weight:700;
+          border:none;
+          cursor:pointer;
+          font-family:'Space Grotesk',sans-serif;
+          transition:all 0.15s;
+          text-decoration:none;
+          display:inline-block;
+        }
+        .act-confirm { background:linear-gradient(135deg,var(--moss),var(--leaf)); color:#fff; box-shadow:0 2px 8px rgba(74,94,42,0.25); }
+        .act-confirm:hover { box-shadow:0 4px 12px rgba(74,94,42,0.35); }
+        .act-reject  { background:rgba(192,60,60,0.1); color:#c03c3c; border:1.5px solid rgba(192,60,60,0.2) !important; }
+        .act-reject:hover { background:rgba(192,60,60,0.18); }
+        .act-ship    { background:rgba(123,58,200,0.1); color:#7b3ac8; border:1.5px solid rgba(123,58,200,0.2) !important; }
+        .act-ship:hover { background:rgba(123,58,200,0.18); }
+        .act-detail  { background:transparent; color:#7a6a5a; border:1.5px solid var(--sand) !important; }
+        .act-detail:hover { background:var(--sand); color:var(--soil); }
+
+        .empty-state { text-align:center; padding:60px 24px; background:#fff; border-radius:16px; border:2px dashed var(--sand); }
+      `}</style>
+
+      <div>
+        <h1 className="page-title">Commandes reçues</h1>
+        <p className="page-sub">Gérez les commandes de vos clients</p>
+
+        {/* Stats */}
+        <div className="stat-row">
+          <div className="stat-chip"><div className="stat-chip-val">{stats.total}</div><div className="stat-chip-key">Total</div></div>
+          <div className="stat-chip"><div className="stat-chip-val" style={{color:'var(--amber)'}}>{stats.en_attente}</div><div className="stat-chip-key">En attente</div></div>
+          <div className="stat-chip"><div className="stat-chip-val" style={{color:'#7b3ac8'}}>{stats.a_expedier}</div><div className="stat-chip-key">À expédier</div></div>
+          <div className="stat-chip"><div className="stat-chip-val" style={{color:'var(--leaf)'}}>{stats.revenus.toFixed(2)} €</div><div className="stat-chip-key">Revenus</div></div>
+        </div>
+
+        {/* Toolbar */}
+        <div className="toolbar">
+          <div className="filter-pills">
+            {FILTERS.map(f => {
+              const cfg = f === 'toutes' ? null : STATUT_CONFIG[f];
+              const isActive = filter === f;
+              return (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f)}
+                  className="pill"
+                  style={isActive
+                    ? { background: f==='toutes' ? 'var(--soil)' : cfg.dot, color:'#fff', borderColor: f==='toutes' ? 'var(--soil)' : cfg.dot }
+                    : { color:'#9a8a7a', borderColor:'var(--sand)' }
+                  }
+                >
+                  {f === 'toutes' ? 'Toutes' : STATUT_CONFIG[f].label}
+                </button>
+              );
+            })}
           </div>
-          
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Rechercher une commande..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full sm:w-64 border border-gray-300 rounded-lg p-2 pl-8 focus:outline-none focus:ring-2 focus:ring-green-500"
-            />
-            <span className="absolute left-2 top-2.5 text-gray-400">🔍</span>
+          <div className="search-wrap">
+            <span className="ico">🔍</span>
+            <input placeholder="Rechercher…" value={search} onChange={e => setSearch(e.target.value)} />
           </div>
         </div>
-      </div>
 
-      {/* Liste des commandes */}
-      {filteredCommandes.length === 0 ? (
-        <div className="bg-white rounded-lg shadow p-12 text-center">
-          <p className="text-gray-500">Aucune commande trouvée</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {filteredCommandes.map((commande) => (
-            <div key={commande.id} className={`bg-white rounded-lg shadow border-l-4 ${getStatutColor(commande.statut)} overflow-hidden`}>
-              <div className="p-4">
-                {/* En-tête de la commande */}
-                <div className="flex flex-wrap justify-between items-start gap-2 mb-3">
-                  <div>
-                    <Link to={`/producteur/commandes/${commande.id}`} className="font-semibold text-blue-600 hover:underline">
-                      {commande.id}
-                    </Link>
-                    <p className="text-sm text-gray-500">
-                      {new Date(commande.date).toLocaleDateString('fr-FR')} à {new Date(commande.date).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {getStatutBadge(commande.statut)}
-                    <span className="text-lg font-bold text-gray-800">{commande.montantTotal.toFixed(2)} €</span>
-                  </div>
-                </div>
-
-                {/* Infos client */}
-                <div className="bg-gray-50 rounded-lg p-3 mb-3">
-                  <div className="flex flex-wrap gap-4 text-sm">
-                    <span><strong>Client :</strong> {commande.client}</span>
-                    <span><strong>Email :</strong> {commande.email}</span>
-                    <span><strong>Tél :</strong> {commande.telephone}</span>
-                  </div>
-                </div>
-
-                {/* Produits commandés */}
-                <div className="mb-3">
-                  <p className="text-sm font-medium text-gray-700 mb-2">Produits commandés :</p>
-                  <div className="flex flex-wrap gap-2">
-                    {commande.produits.map((produit, idx) => (
-                      <span key={idx} className="inline-flex items-center gap-1 bg-gray-100 px-2 py-1 rounded-full text-xs">
-                        {produit.quantite}x {produit.nom} (lot: {produit.lot})
+        {/* List */}
+        {filtered.length === 0 ? (
+          <div className="empty-state"><p style={{fontSize:40}}>📭</p><p style={{marginTop:12,color:'#9a8a7a'}}>Aucune commande trouvée.</p></div>
+        ) : (
+          <div className="orders-list">
+            {filtered.map(cmd => {
+              const cfg = STATUT_CONFIG[cmd.statut] || STATUT_CONFIG.en_attente;
+              return (
+                <div key={cmd.id} className="order-card">
+                  <div className="order-top">
+                    <div>
+                      <Link to={`/producteur/commandes/${cmd.id}`} className="order-id">{cmd.id}</Link>
+                      <div className="order-date">
+                        {new Date(cmd.date).toLocaleDateString('fr-FR')} · {new Date(cmd.date).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}
+                      </div>
+                    </div>
+                    <div style={{display:'flex',alignItems:'center',gap:12,flexWrap:'wrap'}}>
+                      <span className="statut-badge" style={{color:cfg.color,background:cfg.bg,borderColor:cfg.border}}>
+                        <span className="statut-dot" style={{background:cfg.dot}} />
+                        {cfg.label}
                       </span>
-                    ))}
+                      <span className="order-amount">{cmd.montantTotal.toFixed(2)} €</span>
+                    </div>
+                  </div>
+
+                  <div className="order-body">
+                    <div className="client-block">
+                      <div className="client-field"><strong>{cmd.client}</strong></div>
+                      <div className="client-field"><span>{cmd.email}</span></div>
+                      <div className="client-field"><span>{cmd.telephone}</span></div>
+                    </div>
+                    <div className="produits-list">
+                      {cmd.produits.map((p, i) => (
+                        <span key={i} className="produit-tag">{p.quantite}× {p.nom} · lot {p.lot}</span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="order-actions">
+                    {cmd.statut === 'en_attente' && <>
+                      <button onClick={() => handleConfirmer(cmd.id)} className="act-btn act-confirm">✓ Confirmer</button>
+                      <button onClick={() => handleRejeter(cmd.id)}   className="act-btn act-reject">✕ Rejeter</button>
+                    </>}
+                    {cmd.statut === 'confirmee' &&
+                      <button onClick={() => handleExpedier(cmd.id)} className="act-btn act-ship">↑ Expédier</button>
+                    }
+                    <Link to={`/producteur/commandes/${cmd.id}`} className="act-btn act-detail" style={{marginLeft:'auto'}}>Détail →</Link>
                   </div>
                 </div>
-
-                {/* Actions */}
-                <div className="flex flex-wrap gap-2 pt-3 border-t">
-                  {commande.statut === 'en_attente' && (
-                    <>
-                      <button
-                        onClick={() => handleConfirmer(commande.id)}
-                        className="px-4 py-1.5 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 transition"
-                      >
-                        ✅ Confirmer la commande
-                      </button>
-                      <button
-                        onClick={() => handleRejeter(commande.id)}
-                        className="px-4 py-1.5 bg-red-600 text-white rounded-lg text-sm hover:bg-red-700 transition"
-                      >
-                        ❌ Rejeter
-                      </button>
-                    </>
-                  )}
-                  {commande.statut === 'confirmee' && (
-                    <button
-                      onClick={() => handleExpedier(commande.id)}
-                      className="px-4 py-1.5 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 transition"
-                    >
-                      📦 Marquer comme expédiée
-                    </button>
-                  )}
-                  <Link
-                    to={`/producteur/commandes/${commande.id}`}
-                    className="px-4 py-1.5 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 transition"
-                  >
-                    Voir le détail →
-                  </Link>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </>
   );
-};
-
-export default CommandesRecues;
+}
