@@ -8,15 +8,25 @@ const protect = async (req, res, next) => {
     try {
       token = req.headers.authorization.split(' ')[1]
       const decoded = jwt.verify(token, process.env.JWT_SECRET)
-      req.user = await User.findById(decoded.id).select('-password')
+      req.user = await User.findById(decoded.id).select('-password_hash')
       next()
     } catch (error) {
-      res.status(401).json({ message: 'Token invalide' })
+      res.status(401).json({
+        success: false,
+        error: {
+          code: 'INVALID_TOKEN',
+          message: 'Token invalide ou expiré'
+        }
+      })
     }
-  }
-
-  if (!token) {
-    res.status(401).json({ message: 'Pas de token, accès refusé' })
+  } else {
+    res.status(401).json({
+      success: false,
+      error: {
+        code: 'NO_TOKEN',
+        message: 'Token non fourni. Utilisez: Authorization: Bearer <token>'
+      }
+    })
   }
 }
 

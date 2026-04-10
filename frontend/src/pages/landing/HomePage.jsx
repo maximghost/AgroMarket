@@ -1,12 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { Leaf, Shield, Truck, Search, ShoppingCart, Package } from 'lucide-react';
 import Header from '../../components/Layout/Header';
 import AuthModal from '../../components/Auth/AuthModal';
+import { useAuth } from '../../hooks/useAuth';
 
 const HomePage = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [authModal, setAuthModal] = useState({ isOpen: false, mode: 'login' });
+
+  // Rediriger les utilisateurs connectés vers le catalogue
+  useEffect(() => {
+    if (user) {
+      navigate('/catalogue');
+    }
+  }, [user, navigate]);
 
   // Fetch produits en vedette (conforme au Google Doc)
   useEffect(() => {
@@ -73,17 +84,23 @@ const HomePage = () => {
           <h2 className="text-3xl font-bold text-center mb-12">Pourquoi Choisir AgroMarket ?</h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-white/10 backdrop-blur p-8 rounded-3xl text-center">
-              <div className="text-5xl mb-4">🌱</div>
+              <div className="flex justify-center mb-4">
+                <Leaf size={48} className="text-white" />
+              </div>
               <h3 className="font-semibold text-xl mb-2">Traçabilité Complète</h3>
               <p className="text-blue-100">Suivez le parcours exact de chaque produit, de la semence à votre table.</p>
             </div>
             <div className="bg-white/10 backdrop-blur p-8 rounded-3xl text-center">
-              <div className="text-5xl mb-4">🛡️</div>
+              <div className="flex justify-center mb-4">
+                <Shield size={48} className="text-white" />
+              </div>
               <h3 className="font-semibold text-xl mb-2">Origine Vérifiée</h3>
               <p className="text-blue-100">Tous nos producteurs partenaires sont rigoureusement audités.</p>
             </div>
             <div className="bg-white/10 backdrop-blur p-8 rounded-3xl text-center">
-              <div className="text-5xl mb-4">🚚</div>
+              <div className="flex justify-center mb-4">
+                <Truck size={48} className="text-white" />
+              </div>
               <h3 className="font-semibold text-xl mb-2">Livraison Rapide</h3>
               <p className="text-blue-100">Un réseau logistique optimisé pour vous livrer des produits d’une fraîcheur absolue.</p>
             </div>
@@ -97,17 +114,23 @@ const HomePage = () => {
           <h2 className="text-3xl font-bold text-center mb-12">Comment ça Marche ?</h2>
           <div className="grid md:grid-cols-3 gap-8 text-center">
             <div>
-              <div className="mx-auto w-16 h-16 bg-white rounded-2xl shadow flex items-center justify-center text-4xl mb-4">🔍</div>
+              <div className="mx-auto w-16 h-16 bg-white rounded-2xl shadow flex items-center justify-center mb-4">
+                <Search size={36} className="text-gray-800" />
+              </div>
               <h4 className="font-semibold mb-2">1. Parcourez</h4>
               <p className="text-gray-500">Explorez notre vaste catalogue de produits locaux et découvrez leurs origines.</p>
             </div>
             <div>
-              <div className="mx-auto w-16 h-16 bg-white rounded-2xl shadow flex items-center justify-center text-4xl mb-4">🛒</div>
+              <div className="mx-auto w-16 h-16 bg-white rounded-2xl shadow flex items-center justify-center mb-4">
+                <ShoppingCart size={36} className="text-gray-800" />
+              </div>
               <h4 className="font-semibold mb-2">2. Commandez</h4>
               <p className="text-gray-500">Ajoutez vos produits préférés au panier et payez en toute sécurité.</p>
             </div>
             <div>
-              <div className="mx-auto w-16 h-16 bg-white rounded-2xl shadow flex items-center justify-center text-4xl mb-4">📦</div>
+              <div className="mx-auto w-16 h-16 bg-white rounded-2xl shadow flex items-center justify-center mb-4">
+                <Package size={36} className="text-gray-800" />
+              </div>
               <h4 className="font-semibold mb-2">3. Recevez</h4>
               <p className="text-gray-500">Profitez d’une livraison rapide à votre porte et savourez la fraîcheur.</p>
             </div>
@@ -142,7 +165,7 @@ const HomePage = () => {
       <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-6">
-            <span className="text-3xl">🌱</span>
+            <Leaf size={32} className="text-green-500" />
             <span className="text-2xl font-bold">AgroMarket</span>
           </div>
           <p className="text-sm opacity-70">© 2026 TP E-commerce Mets Locaux - Tous droits réservés</p>
