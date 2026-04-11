@@ -41,7 +41,7 @@ const orderSchema = new mongoose.Schema(
     },
     payment_method: {
       type: String,
-      enum: ['kkiapay', 'cash_on_delivery'],
+      enum: ['kkiapay', 'cash_on_delivery', 'simulation'],
       default: null
     },
     kkiapay_transaction_id: String, // ID retourné par KKiaPay

@@ -5,6 +5,7 @@ import {
   getOrderById,
   createOrder,
   cancelOrder,
+  confirmPayment,
   getClientDashboard
 } from '../controllers/orderController.js'
 
@@ -17,6 +18,7 @@ router.get('/', getOrders)
 router.post('/', createOrder)
 router.get('/dashboard', getClientDashboard)
 router.get('/:id', getOrderById)
+router.post('/:id/confirm-payment', confirmPayment)
 router.patch('/:id/cancel', cancelOrder)
 
 export default router
