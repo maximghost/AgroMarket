@@ -1,0 +1,828 @@
+Spécification Technique - API Agri-Market
+
+Préfixe API : /api/v1
+1. Modèles de données
+5 collections MongoDB Atlas. Les _id sont des ObjectId auto-générés.
+1.1 User
+Un seul modèle pour tous les rôles. Le champ role détermine les accès.
+
+Champ
+Type
+Requis
+Description
+_id
+ObjectId
+Oui
+Identifiant unique auto-généré
+full_name
+String
+Oui
+Nom complet
+email
+String
+Oui
+Email unique (index unique)
+phone
+String
+Non
+Numéro de téléphone
+password_hash
+String
+Oui
+Hash bcrypt
+role
+String
+Oui
+"client" | "producteur" | "admin"
+commune
+String
+Non
+Commune de l'utilisateur
+avatar_url
+String
+Non
+URL fichier image stocké sur Cloudflare R2
+is_active
+Boolean
+Oui
+Compte actif ou suspendu
+created_at
+Date
+Oui
+Date de création
+updated_at
+Date
+Oui
+Dernière modification
+
+
+
+
+1.2 Product
+Produit agricole ou met local proposé par un producteur.
+
+Champ
+Type
+Requis
+Description
+_id
+ObjectId
+Oui
+Identifiant unique auto-généré
+producer_id
+ObjectId
+Oui
+Référence vers User (role: producteur)
+name
+String
+Oui
+Nom du produit (ex: Attiéké, Gari, Huile rouge)
+category
+String
+Oui
+"cereales" | "racineshuile" | "tubercules" | "legumes" | "oléagineux" | "autre"
+description
+String
+Non
+Description du produit
+price
+Number
+Oui
+Prix en FCFA
+unit
+String
+Oui
+"kg" | "litre" | "sachet" | "botte" | "unite"
+stock_qty
+Number
+Oui
+Quantité disponible en stock
+communenpm install -g pnpm
+String
+Oui
+Commune de production
+images
+Array
+Non
+URLs R2 des photos (voir §5 — Stockage Cloudflare R2)
+traceability_id
+ObjectId
+Non
+Référence vers Traceability
+is_available
+Boolean
+Oui
+Produit visible et achetable
+created_at
+Date
+Oui
+Date de création
+updated_at
+Date
+Oui
+Dernière modification
+
+
+Index : producer_id, commune, category, is_available. Index texte sur name + description pour la recherche.
+
+1.3 Traceability
+Fiche de traçabilité rattachée à un produit (une seule par produit).
+
+Champ
+Type
+Requis
+Description
+_id
+ObjectId
+Oui
+Identifiant unique auto-généré
+product_id
+ObjectId
+Oui
+Référence vers Product (index unique)
+producer_id
+ObjectId
+Oui
+Référence vers User (producteur)
+farm_name
+String
+Non
+Nom de l'exploitation ou coopérative
+commune
+String
+Non
+Commune de production
+cultivation_method
+String
+Non
+"traditionnel" | "bio" | "semi-intensif"
+harvest_date
+Date
+Non
+Date de récolte
+processing_steps
+Array
+Non
+Étapes : [{ step, description, date }]
+certifications
+Array
+Non
+Certifications : [{ name, issuer, issued_at }]
+pesticides_used
+Boolean
+Non
+Présence de pesticides déclarée
+is_verified
+Boolean
+Oui
+Validé par un admin (false = auto-déclaré)
+created_at
+Date
+Oui
+Date de création
+updated_at
+Date
+Oui
+Dernière modification
+
+
+1.4 Order
+Commande passée par un client. Les articles sont copiés à l'instant T pour figer les prix.
+
+Champ
+Type
+Requis
+Description
+_id
+ObjectId
+Oui
+Identifiant unique auto-généré
+buyer_id
+ObjectId
+Oui
+Référence vers User (client)
+items
+Array
+Oui
+[{ product_id, name, price_at_order, qty, subtotal }]
+total_amount
+Number
+Oui
+Montant total en FCFA
+status
+String
+Oui
+"pending" | "confirmed" | "shipped" | "delivered" | "cancelled"
+payment_status
+String
+Oui
+"unpaid" | "paid" | "failed"
+payment_method
+String
+Non
+"kkiapay" | "cash_on_delivery"
+kkiapay_transaction_id
+String
+Non
+ID transaction retourné par KKiaPay (si mobile money)
+delivery_address
+Object
+Oui
+{ full_name, phone, commune, quartier, indications }
+delivery_type
+String
+Oui
+"standard" | "retrait_sur_place"
+notes
+String
+Non
+Instructions du client
+created_at
+Date
+Oui
+Date de la commande
+updated_at
+Date
+Oui
+Dernière modification
+
+
+Les prix sont copiés dans items.price_at_order au moment de la commande. Le champ kkiapay_transaction_id est renseigné par le webhook de confirmation.
+
+1.5 Cart
+Panier persistant côté serveur. Un seul par utilisateur. Vidé après conversion en commande.
+
+Champ
+Type
+Requis
+Description
+_id
+ObjectId
+Oui
+Identifiant unique auto-généré
+user_id
+ObjectId
+Oui
+Référence vers User (index unique)
+items
+Array
+Oui
+[{ product_id, name, price_snapshot, qty }]
+updated_at
+Date
+Oui
+Dernière modification
+
+
+2. Schéma relationnel
+
+User (producteur)  1 ────────< Product        (producer_id)
+Product            1 ────────  Traceability   (product_id, unique)
+User (client)      1 ────────< Order          (buyer_id)
+User (client)      1 ────────  Cart           (user_id, unique)
+
+Contraintes :
+Un seul Cart par User
+Une seule Traceability par Product
+
+3. Routes API
+Préfixe : /api/v1
+
+// Succès  →  { "success": true, "data": { ... }, "meta": { "total": 42, "page": 1 } }
+// Erreur  →  { "success": false, "error": { "code": "NOT_FOUND", "message": "..." } }
+
+3.1 Auth
+
+Méthode
+Endpoint
+Description
+POST
+/auth/register
+Créer un compte (client ou producteur)
+POST
+/auth/login
+Connexion — retourne access_token + refresh_token
+POST
+/auth/refresh
+Renouveler le access_token
+POST
+/auth/logout
+Invalider le refresh_token
+
+
+🔴  V2 — À implémenter si le temps le permet
+
+Méthode
+Endpoint
+Description
+POST
+/auth/forgot-password
+Envoyer un email de réinitialisation
+POST
+/auth/reset-password
+Réinitialiser le mot de passe
+GET
+/auth/verify/:token
+Vérifier l'adresse email
+
+
+3.2 Users
+
+Méthode
+Endpoint
+Description
+GET
+/users/me
+Profil de l'utilisateur connecté
+PATCH
+/users/me
+Modifier son profil
+
+
+🔴  V2
+
+Méthode
+Endpoint
+Description
+PATCH
+/users/me/avatar
+Changer sa photo de profil (upload R2)
+DELETE
+/users/me
+Supprimer son compte
+GET
+/users/:id
+Profil public d'un producteur
+
+
+3.3 Products
+
+Méthode
+Endpoint
+Description
+GET
+/products
+Catalogue — liste paginée avec filtres
+GET
+/products/:id
+Détail d'un produit + traceability
+POST
+/products
+Créer un produit (producteur uniquement)
+PUT
+/products/:id
+Modifier un produit (propriétaire)
+PATCH
+/products/:id/toggle
+Activer / désactiver la disponibilité
+DELETE
+/products/:id
+Supprimer un produit
+
+
+Query params — GET /products
+page       int      Numéro de page (défaut: 1)
+limit      int      Résultats par page (défaut: 20, max: 100)
+commune    string   Filtrer par commune
+category   string   cereale | huile | tubercule | legume | condiment | autre
+search     string   Recherche full-text (name + description)
+sort       string   price | created_at (défaut: created_at)
+order      string   asc | desc (défaut: desc)
+
+🔴  V2
+
+Méthode
+Endpoint
+Description
+GET
+/products/:id/reviews
+Avis du produit (paginé)
+POST
+/products/:id/reviews
+Laisser un avis (acheteur vérifié)
+
+
+3.4 Traceability
+
+Méthode
+Endpoint
+Description
+GET
+/traceability/:product_id
+Fiche de traçabilité d'un produit (publique)
+POST
+/traceability
+Créer une fiche (producteur)
+PUT
+/traceability/:id
+Modifier la fiche (propriétaire)
+
+
+🔴  V2
+
+Méthode
+Endpoint
+Description
+GET
+/traceability/:id/verify
+Vérification publique via QR code (no auth)
+PATCH
+/traceability/:id/certify
+Admin : valider la fiche
+
+
+3.5 Orders
+
+Méthode
+Endpoint
+Description
+GET
+/orders
+Mes commandes (client connecté)
+POST
+/orders
+Passer une commande
+GET
+/orders/:id
+Détail d'une commande
+PATCH
+/orders/:id/cancel
+Annuler (si status = pending)
+
+
+Body — POST /orders
+{
+  "items": [{ "product_id": "ObjectId", "qty": 2 }],
+  "delivery_address": {
+    "full_name": "Kouassi Ama", "phone": "+229 90000000",
+    "commune": "Cotonou", "quartier": "Zogbo"
+  },
+  "delivery_type": "standard",
+  "payment_method": "kkiapay"
+}
+
+Si payment_method = "kkiapay" : le backend crée la commande avec payment_status = "unpaid", puis le frontend ouvre le widget KKiaPay. La confirmation définitive arrive via webhook (voir §6).
+
+🔴  V2
+
+Méthode
+Endpoint
+Description
+PATCH
+/orders/:id/status
+Admin/producteur : changer le statut
+GET
+/orders/:id/invoice
+Télécharger la facture PDF
+
+
+3.6 Cart
+
+Méthode
+Endpoint
+Description
+GET
+/cart
+Récupérer le panier
+POST
+/cart/items
+Ajouter un article
+PATCH
+/cart/items/:product_id
+Modifier la quantité
+DELETE
+/cart/items/:product_id
+Supprimer un article
+DELETE
+/cart
+Vider le panier
+POST
+/cart/checkout
+Convertir en commande
+
+
+3.7 Dashboard Client
+
+Méthode
+Endpoint
+Description
+GET
+/client/dashboard
+Résumé : nb commandes, statuts, total dépensé
+GET
+/client/orders
+Historique des commandes (paginé)
+
+
+3.8 Dashboard Producteur
+
+Méthode
+Endpoint
+Description
+GET
+/producer/dashboard
+KPIs : revenus, commandes, produits actifs, stock bas
+GET
+/producer/products
+Mes produits
+GET
+/producer/orders
+Commandes incluant mes produits
+GET
+/producer/low-stock
+Produits dont le stock est sous le seuil
+
+
+Réponse — GET /producer/dashboard
+{
+  "revenue_total": 485000,
+  "orders_total": 134,
+  "orders_pending": 8,
+  "products_active": 12,
+  "low_stock_count": 3
+}
+
+3.9 Dashboard Admin
+
+Méthode
+Endpoint
+Description
+GET
+/admin/dashboard
+KPIs globaux : users, produits, commandes, revenus plateforme
+GET
+/admin/users
+Liste tous les utilisateurs (paginé, filtrable)
+PATCH
+/admin/users/:id/toggle
+Activer / désactiver un compte
+GET
+/admin/orders
+Toutes les commandes
+GET
+/admin/products
+Tous les produits
+PATCH
+/admin/traceability/:id/certify
+Valider une fiche de traçabilité
+
+
+Réponse — GET /admin/dashboard
+{
+  "users_total": 320,
+  "users_producers": 48,
+  "products_total": 210,
+  "orders_total": 1540,
+  "orders_pending": 34,
+  "revenue_platform": 12400000
+}
+
+🔴  V2
+
+Méthode
+Endpoint
+Description
+GET
+/admin/traceability
+Liste toutes les fiches de traçabilité
+DELETE
+/admin/products/:id
+Forcer la suppression d'un produit
+GET
+/admin/export/orders
+Export CSV des commandes
+GET
+/admin/export/products
+Export CSV des produits
+
+
+4. Authentification & Permissions
+JWT — header : Authorization: Bearer <access_token>
+
+Matrice des permissions
+
+Route
+Client
+Producteur
+Admin
+GET /products (catalogue)
+✓
+✓
+✓
+GET /products/:id
+✓
+✓
+✓
+POST /products
+✗
+✓
+✓
+GET /traceability/:product_id
+✓
+✓
+✓
+POST /traceability
+✗
+✓
+✓
+POST /orders
+✓
+✗
+✓
+POST /payments/kkiapay/webhook
+✗ (interne)
+✗ (interne)
+✗ (interne)
+GET /client/dashboard
+✓
+✗
+✗
+GET /producer/dashboard
+✗
+✓
+✓
+GET /admin/dashboard
+✗
+✗
+✓
+PATCH /admin/users/:id/toggle
+✗
+✗
+✓
+PATCH /admin/traceability/certify
+✗
+✗
+✓
+
+
+5. Stockage Cloudflare R2
+Cloudflare R2
+5.1 Options d'exposition des fichiers
+Le dev en charge du stockage choisira l'une des trois options suivantes selon les contraintes projet :
+
+Option
+Description
+Avantages
+Inconvénients
+A — Domaine custom(recommandé)
+Lier un domaine ex: cdn.agrimarket.com au bucket R2 via Cloudflare
+URLs propres, CDN gratuit, HTTPS auto, pas d'exposition du bucket R2 en clair
+Nécessite un domaine et accès Cloudflare DNS
+B — Domaine R2 public
+Activer r2.dev sur le bucket (URLs: pub-xxx.r2.dev/...)
+Simple, rapide à configurer
+URLs peu lisibles, pas de domaine custom
+C — URLs signées
+Fichiers privés, génération d'URLs temporaires côté backend
+Contrôle d'accès fin
+Complexité accrue, URLs expirent
+
+
+⚠ L'option A (domaine custom) est recommandée pour la production. L'option B peut être utilisée pour le dev/staging.
+5.2 Variables d'environnement requises
+
+R2_ACCOUNT_ID=xxxxxxxxxxxxxxxxxxxx
+R2_ACCESS_KEY_ID=xxxxxxxxxxxxxxxxxxxx
+R2_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxxxxxxx
+R2_BUCKET_NAME=agrimarket-media
+R2_PUBLIC_URL=https://cdn.agrimarket.com   # ou URL r2.dev selon l'option choisie
+5.3 Organisation du bucket
+
+agrimarket-media/
+├── products/{product_id}/{filename}.{ext}
+└── avatars/{user_id}/{filename}.{ext}
+
+L'URL finale stockée en base sera : {R2_PUBLIC_URL}/products/{product_id}/{filename}.{ext}
+5.4 Routes upload
+
+Méthode
+Endpoint
+Rôle
+Description
+POST
+/upload/product-image
+Producteur
+Upload photo produit → retourne l'URL R2
+POST
+/upload/avatar
+Tout rôle
+Upload avatar utilisateur → retourne l'URL R2
+DELETE
+/upload/:key
+Propriétaire / Admin
+Supprime un fichier du bucket
+
+
+Le backend utilise le SDK AWS S3 compatible (endpoint Cloudflare R2) pour les opérations PutObject / DeleteObject.
+
+6. Intégration KKiaPay
+KKiaPay est le prestataire de paiement mobile money (MTN, Moov, Wave…). L'intégration combine le widget frontend et la vérification backend via webhook.
+6.1 Flux de paiement complet
+
+1. Client POST /orders  →  Commande créée (payment_status: "unpaid")
+2. Backend retourne { order_id, total_amount }
+3. Frontend ouvre le widget KKiaPay avec { amount, api_key, order_id }
+4. Client paie via mobile money
+5. KKiaPay appelle le webhook backend POST /payments/kkiapay/webhook
+6. Backend vérifie la transaction via l'API KKiaPay (verifyTransaction)
+7. Si vérifiée → Order.payment_status = "paid", Order.status = "confirmed"
+8. Backend retourne HTTP 200 à KKiaPay
+
+⚠ Ne jamais marquer une commande comme payée sans avoir vérifié côté backend via l'API KKiaPay. Le callback frontend seul n'est pas suffisant.
+6.2 Variables d'environnement
+
+KKIAPAY_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx   # Clé publique (widget)
+KKIAPAY_PRIVATE_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  # Clé privée (webhook)
+KKIAPAY_SECRET=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx        # Secret HMAC (signature webhook)
+KKIAPAY_SANDBOX=true   # false en production
+6.3 Intégration widget frontend
+
+// Charger le SDK KKiaPay
+<script src="https://cdn.kkiapay.me/k.js"></script>
+
+
+// Ouvrir le widget après création de la commande
+openKkiapayWidget({
+  amount: order.total_amount,
+  api_key: process.env.KKIAPAY_API_KEY,
+  callback: "https://monapp.com/payment/return",
+  data: order._id,          // order_id passé en metadata
+  theme: "#1F4E79",
+  sandbox: true,
+});
+
+
+// Écouter la confirmation côté client (UI seulement — ne pas se fier pour la logique métier)
+addSuccessListener(function(response) {
+  // response.transactionId disponible
+  // Afficher un message de succès, rediriger vers /orders/:id
+  // La vérification réelle est faite par le webhook backend
+});
+6.4 Webhook backend
+Route
+
+Méthode
+Endpoint
+Auth
+Description
+POST
+/payments/kkiapay/webhook
+Signature HMAC
+Callback KKiaPay — confirmation de paiement
+
+
+Payload reçu
+{
+  "transactionId": "TXN_XXXXXXXX",
+  "status": "SUCCESS",
+  "amount": 15000,
+  "data": "ORDER_OBJECTID"   // order_id passé en metadata widget
+}
+
+Logique de traitement (pseudo-code)
+// 1. Vérifier la signature HMAC
+verifyWebhookSignature(req.headers['x-kkiapay-signature'], req.body, KKIAPAY_SECRET)
+
+
+// 2. Vérifier la transaction auprès de l'API KKiaPay
+const tx = await kkiapay.verifyTransaction(transactionId)
+if (tx.status !== 'SUCCESS') return res.status(200).end()
+
+
+// 3. Retrouver la commande
+const order = await Order.findById(data)
+if (!order || order.payment_status === 'paid') return res.status(200).end()
+
+
+// 4. Vérifier le montant
+if (tx.amount !== order.total_amount) { /* log anomalie */ return res.status(200).end() }
+
+
+// 5. Mettre à jour la commande
+order.payment_status = 'paid'
+order.status = 'confirmed'
+order.kkiapay_transaction_id = transactionId
+await order.save()
+
+
+// 6. Répondre 200 à KKiaPay (obligatoire)
+return res.status(200).json({ received: true })
+
+
+6.5 Gestion des cas d'échec
+
+Scénario
+Action
+Widget fermé sans payer
+Commande reste pending — annulation auto après X minutes (cron job V2)
+Webhook reçu mais signature invalide
+Rejeter (HTTP 400), logger l'alerte sécurité
+Montant webhook ≠ montant commande
+Logger anomalie, NE PAS marquer comme payé, alerter admin
+Webhook reçu en double
+Vérifier order.payment_status avant maj (idempotence)
+Paiement échoué (status FAILED)
+Mettre payment_status = "failed", notifier le client
+
+
+

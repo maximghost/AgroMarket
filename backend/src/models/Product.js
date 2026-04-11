@@ -1,24 +1,61 @@
-import mongoose from "mongoose";
 
-const productSchema = new mongoose.Schema({
-  producer_id: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  name: { type: String, required: true },
-  category: { type: String, required: true, enum: ["cereales", "racines", "tubercules", "legumes", "oléagineux", "autre"] },
-  description: { type: String },
-  price: { type: Number, required: true },
-  unit: { type: String, required: true, enum: ["kg", "litre", "sachet", "botte", "juute"] },
-  stock_qty: { type: Number, required: true },
-  commune: { type: String, required: true },
-  images: [{ type: String }], // URLs R2
-  traceability_id: { type: mongoose.Schema.Types.ObjectId, ref: "Traceability" },
-  is_available: { type: Boolean, required: true, default: true },
-  created_at: { type: Date, default: Date.now },
-  updated_at: { type: Date, default: Date.now }
-});
+import mongoose from 'mongoose'
 
-// Indexes pour recherche et filtres
-productSchema.index({ producer_id: 1, commune: 1, category: 1, is_available: 1 });
-productSchema.index({ name: "text", description: "text" });
+const productSchema = new mongoose.Schema(
+  {
+    producer_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true
+    },
+    name: {
+      type: String,
+      required: true
+    },
+    category: {
+      type: String,
+      enum: ['cereales', 'racineshuile', 'tubercules', 'legumes', 'oleagineux', 'autre'],
+      required: true,
+      index: true
+    },
+    description: String,
+    price: {
+      type: Number,
+      required: true
+    },
+    unit: {
+      type: String,
+      enum: ['kg', 'litre', 'sachet', 'botte', 'unite'],
+      required: true
+    },
+    stock_qty: {
+      type: Number,
+      required: true,
+      default: 0
+    },
+    commune: {
+      type: String,
+      required: true,
+      index: true
+    },
+    images: [String], // URLs des images stockées sur R2
+    traceability_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Traceability',
+      default: null
+    },
+    is_available: {
+      type: Boolean,
+      default: true,
+      index: true
+    }
+  },
+  { timestamps: true }
+)
 
-export default mongoose.model("Product", productSchema);
+// Index texte pour recherche full-text
+productSchema.index({ name: 'text', description: 'text' })
+
+export default mongoose.model('Product', productSchema)
 

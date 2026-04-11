@@ -1,12 +1,13 @@
 import express from "express";
-import { register, login, getMe } from "../controllers/userController.js";
+import { getMe } from "../controllers/userController.js";
 import protect from '../middlewares/authMiddleware.js'
 
 const router = express.Router();
 
-router.post("/register", register);
-router.post("/login", login);
-router.get('/me', protect, getMe)
+// Routes utilisateur (profil) - protégées
+router.use(protect)
+router.get("/me", getMe);
+// TODO: PATCH /me pour modifier le profil
 
 export default router;
 
