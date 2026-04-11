@@ -8,12 +8,7 @@ const SHARED = `
   body{font-family:'Space Grotesk',sans-serif;}
 `;
 
-const MOCK = [
-  { id:'CMD-001', client:'Jean Dupont', email:'jean.dupont@email.com', telephone:'06 12 34 56 78', produits:[{nom:'Tomates bio',quantite:2,prix:3.50,lot:'A1-2405'}], montantTotal:7.00, date:'2026-04-09T10:30:00', statut:'en_attente', adresseLivraison:'12 rue des Lilas, 75001 Paris' },
-  { id:'CMD-002', client:'Marie Curie', email:'marie.curie@email.com', telephone:'06 98 76 54 32', produits:[{nom:'Courgettes',quantite:3,prix:2.80,lot:'B2-2406'}], montantTotal:8.40, date:'2026-04-08T14:15:00', statut:'confirmee', adresseLivraison:'5 avenue des Roses, 69002 Lyon' },
-  { id:'CMD-003', client:'Pierre Martin', email:'pierre.martin@email.com', telephone:'07 11 22 33 44', produits:[{nom:'Miel de printemps',quantite:2,prix:12.00,lot:'C3-2407'},{nom:'Tomates bio',quantite:1,prix:3.50,lot:'A1-2405'}], montantTotal:27.50, date:'2026-04-07T09:45:00', statut:'expediee', adresseLivraison:'8 rue de la Gare, 44000 Nantes' },
-  { id:'CMD-004', client:'Sophie Dubois', email:'sophie.dubois@email.com', telephone:'06 55 66 77 88', produits:[{nom:'Courgettes',quantite:1,prix:2.80,lot:'B2-2406'}], montantTotal:2.80, date:'2026-04-06T16:20:00', statut:'livree', adresseLivraison:'15 boulevard Victor Hugo, 13001 Marseille' },
-];
+
 
 const STATUT_CONFIG = {
   en_attente: { label:'En attente', color:'#c8873a', bg:'rgba(200,135,58,0.1)', border:'rgba(200,135,58,0.25)', dot:'#c8873a' },

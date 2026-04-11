@@ -21,8 +21,13 @@ export default function AjouterProduit() {
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm(f => ({ ...f, [name]: value }));
+    const { name, value, files } = e.target;
+    if (name === "image") {
+      // gestion spécifique pour le fichier
+      setForm(f => ({ ...f, image: files[0] }));
+    } else {
+      setForm(f => ({ ...f, [name]: value }));
+    }
     if (errors[name]) setErrors(er => ({ ...er, [name]: '' }));
   };
 
@@ -38,15 +43,48 @@ export default function AjouterProduit() {
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
     setLoading(true);
-    setTimeout(() => {
-      console.log('Produit:', form);
+
+    try {
+      const token = localStorage.getItem("token");
+
+      const formData = new FormData();
+      formData.append("name", form.nom);
+      formData.append("description", form.description);
+      formData.append("price", parseFloat(form.prix));
+      formData.append("unit", form.unite);
+      formData.append("stock_qty", parseInt(form.stock, 10));
+      formData.append("category", form.categorie);
+      formData.append("commune", form.origine);
+      formData.append("lot", form.lot);
+      formData.append("dateProduction", form.dateProduction);
+      formData.append("dateExpiration", form.dateExpiration);
+
+      if (form.image) {
+        formData.append("image", form.image);
+      }
+
+      const res = await fetch("http://localhost:5000/producteurs/produits", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (!res.ok) throw new Error("Erreur lors de la création du produit");
+      const data = await res.json();
+
+      console.log("Produit créé:", data);
       setLoading(false);
-      navigate('/producteur/produits');
-    }, 1000);
+      navigate("/producteur/produits");
+    } catch (err) {
+      console.error("Erreur:", err);
+      setLoading(false);
+    }
   };
 
   return (

@@ -20,18 +20,29 @@ export default function DashboardProducteur() {
   const [animated, setAnimated] = useState(false);
 
   useEffect(() => {
-    setTimeout(() => {
-      setStats({ clients: 24, commandes: 47, revenus: 1284.50, produits: 12 });
-      setVentes([
-        { mois: 'Jan', v: 42 }, { mois: 'Fév', v: 61 }, { mois: 'Mar', v: 78 },
-        { mois: 'Avr', v: 95 }, { mois: 'Mai', v: 112 }, { mois: 'Jun', v: 134 },
-        { mois: 'Jul', v: 119 }, { mois: 'Aoû', v: 98 }, { mois: 'Sep', v: 83 },
-        { mois: 'Oct', v: 67 }, { mois: 'Nov', v: 54 }, { mois: 'Déc', v: 38 },
-      ]);
-      setLoaded(true);
-      setTimeout(() => setAnimated(true), 100);
-    }, 400);
+    const token = localStorage.getItem("token"); // récupéré après login
+
+    fetch("http://localhost:5000/producteurs/dashboard", {
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    })
+      .then(res => res.json())
+      .then(data => {
+        setStats({
+          clients: data.clients,
+          commandes: data.commandes,
+          revenus: data.revenus,
+          produits: data.produits
+        });
+        setVentes(data.ventes);
+        setLoaded(true);
+        setTimeout(() => setAnimated(true), 100);
+      })
+      .catch(err => console.error("Erreur dashboard:", err));
   }, []);
+
 
   const max = Math.max(...ventes.map(v => v.v), 1);
 

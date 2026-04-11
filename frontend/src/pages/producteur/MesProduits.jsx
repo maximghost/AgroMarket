@@ -8,18 +8,45 @@ const SHARED = `
   body{font-family:'Space Grotesk',sans-serif;}
 `;
 
-const MOCK = [
-  { id:1, nom:'Tomates bio',        prix:3.50, stock:12, unite:'kg',  emoji:'🍅', lot:'A1-2405', origine:'France, Bretagne', statut:'actif' },
-  { id:2, nom:'Courgettes',         prix:2.80, stock:5,  unite:'kg',  emoji:'🥒', lot:'B2-2406', origine:'France',           statut:'actif' },
-  { id:3, nom:'Miel de printemps',  prix:12.0, stock:0,  unite:'pot', emoji:'🍯', lot:'C3-2407', origine:'Local',             statut:'rupture' },
-];
 
 export default function MesProduits() {
   const [produits, setProduits] = useState([]);
   const [loading,  setLoading]  = useState(true);
 
   useEffect(() => {
-    setTimeout(() => { setProduits(MOCK); setLoading(false); }, 400);
+    const token = localStorage.getItem("token");
+
+    fetch("http://localhost:5000/producteurs/produits", {
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("Unauthorized");
+        return res.json();
+      })
+      .then(data => {
+        // Adapter les champs backend vers ceux attendus par le frontend
+        const mapped = data.map(p => ({
+          id: p._id,
+          nom: p.name,
+          prix: typeof p.price === "number" ? p.price : 0,
+          unite: p.unit,
+          stock: p.stock_qty,
+          emoji: "📦", // valeur par défaut si pas d’image
+          lot: p.lot || p._id.slice(-6),
+          origine: p.commune || "Local",
+          statut: p.stock_qty > 0 ? "actif" : "rupture",
+          images: p.images || []
+        }));
+        setProduits(mapped);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Erreur produits:", err);
+        setProduits([]); // évite le crash
+        setLoading(false);
+      });
   }, []);
 
   const handleSupprimer = (id) => {
