@@ -15,7 +15,7 @@ const productSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ['cereales', 'racineshuile', 'tubercules', 'legumes', 'oleagineux', 'autre'],
+      enum: ['cereales', 'racineshuile', 'tubercules', 'legumes', 'oleagineux', 'autres'],
       required: true,
       index: true
     },

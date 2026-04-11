@@ -51,28 +51,40 @@ export default function AjouterProduit() {
     try {
       const token = localStorage.getItem("token");
 
-      const formData = new FormData();
-      formData.append("name", form.nom);
-      formData.append("description", form.description);
-      formData.append("price", parseFloat(form.prix));
-      formData.append("unit", form.unite);
-      formData.append("stock_qty", parseInt(form.stock, 10));
-      formData.append("category", form.categorie);
-      formData.append("commune", form.origine);
-      formData.append("lot", form.lot);
-      formData.append("dateProduction", form.dateProduction);
-      formData.append("dateExpiration", form.dateExpiration);
-
+      let imageUrl = null;
       if (form.image) {
-        formData.append("image", form.image);
+        const cloudForm = new FormData();
+        cloudForm.append("file", form.image);
+        cloudForm.append("upload_preset", "agromarket"); // ton preset Cloudinary
+
+        const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/<cloud_name>/image/upload`, {
+          method: "POST",
+          body: cloudForm
+        });
+        const cloudData = await cloudRes.json();
+        imageUrl = cloudData.secure_url;
       }
 
+      // Envoi JSON au backend
       const res = await fetch("http://localhost:5000/producteurs/produits", {
         method: "POST",
         headers: {
+          "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
         },
-        body: formData
+        body: JSON.stringify({
+          name: form.nom,
+          description: form.description,
+          price: parseFloat(form.prix),
+          unit: form.unite,
+          stock_qty: parseInt(form.stock, 10),
+          category: form.categorie,
+          commune: form.origine,
+          lot: form.lot,
+          dateProduction: form.dateProduction,
+          dateExpiration: form.dateExpiration,
+          images: imageUrl ? [imageUrl] : []
+        })
       });
 
       if (!res.ok) throw new Error("Erreur lors de la création du produit");

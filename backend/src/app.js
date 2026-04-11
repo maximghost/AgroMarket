@@ -7,10 +7,6 @@ import userRoutes from './routes/userRoutes.js'
 
 import producteurRoutes from './routes/producteurRoutes.js'
 
-import path from "path";
-import { fileURLToPath } from "url";
-import fs from "fs";
-
 import productRoutes from './routes/productRoutes.js'
 import cartRoutes from './routes/cartRoutes.js'
 import orderRoutes from './routes/orderRoutes.js'
@@ -20,19 +16,6 @@ dotenv.config()
 connectDB()
 
 const app = express()
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-
-
-// Vérifie et crée le dossier si absent
-const imagesDir = path.join(__dirname, "imagesDeProduits");
-if (!fs.existsSync(imagesDir)) {
-  fs.mkdirSync(imagesDir, { recursive: true });
-}
-
-
-app.use("/imagesDeProduits", express.static(imagesDir));
 
 // Middleware
 app.use(cors())

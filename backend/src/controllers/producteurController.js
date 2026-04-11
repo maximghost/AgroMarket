@@ -1,5 +1,6 @@
 import Product from "../models/Product.js";
 import Order from "../models/Order.js";
+import cloudinary from "../config/cloudinary.js";
 
 // Dashboard
 export const getDashboard = async (req, res) => {
@@ -61,32 +62,36 @@ export const getProduitById = async (req, res) => {
   }
 };
 
+// créer un produit avec URL Cloudinary envoyée par le frontend
 export const createProduit = async (req, res) => {
   try {
     console.log("req.body:", req.body);
-    console.log("req.file:", req.file);
 
     const producerId = req.user._id;
 
-    // Construire l’URL publique de l’image
-    const imageUrl = req.file
-      ? `${req.protocol}://${req.get("host")}/imagesDeProduits/${req.file.filename}`
-      : null;
-
     const produit = new Product({
-      ...req.body,
+      name: req.body.name,
+      description: req.body.description,
+      price: Number(req.body.price),
+      unit: req.body.unit,
+      stock_qty: Number(req.body.stock_qty),
+      category: req.body.category,
+      commune: req.body.commune,
+      lot: req.body.lot,
+      dateProduction: req.body.dateProduction ? new Date(req.body.dateProduction) : null,
+      dateExpiration: req.body.dateExpiration ? new Date(req.body.dateExpiration) : null,
       producer_id: producerId,
-      price: Number(req.body.price),       // cast en nombre
-      stock_qty: Number(req.body.stock_qty), // cast en nombre
-      images: imageUrl ? [imageUrl] : [] // tableau d’URLs
+      images: req.body.images || []   // tableau d’URL Cloudinary
     });
 
     await produit.save();
     res.status(201).json(produit);
   } catch (err) {
+    console.error("Erreur création produit:", err.message);
     res.status(400).json({ error: err.message });
   }
 };
+
 
 export const updateProduit = async (req, res) => {
   try {
