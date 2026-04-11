@@ -18,8 +18,11 @@ const ForgotPassword = () => {
         
         {/* En-tête avec Logo fictif */}
         <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-green-700">AgroMarket</h2>
-          <p className="mt-2 text-sm text-gray-600">Récupération de compte</p>
+            <h3 className="text-2xl font-bold mb-6">
+              <span className="text-green-600">AGRO</span>
+              <span className="text-orange-500">MARKET</span>
+            </h3>         
+            <p className="mt-2 text-sm text-gray-600">Récupération de compte</p>
         </div>
 
         {!isSubmitted ? (

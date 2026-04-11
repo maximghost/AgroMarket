@@ -35,7 +35,7 @@ const ResetPassword = () => {
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
         
         <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-green-700">AgroMarket</h2>
+          <img src="/images/AGROMARKET.png" alt="AgroMarket" className="rounded-3xl shadow-xl" />
           <p className="mt-2 text-sm text-gray-600">Nouveau mot de passe</p>
         </div>
 
