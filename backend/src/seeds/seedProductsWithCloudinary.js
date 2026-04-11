@@ -12,82 +12,166 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const produits = [
-  // Accompagnements/Légumes
-  { name: 'Ablo', price: 1500, unit: 'sachet', stock_qty: 50, category: 'legumes', commune: 'Comè', description: 'Ablo traditionnel', imageFile: 'ablo.jpg' },
-  { name: 'Aloco', price: 1500, unit: 'sachet', stock_qty: 50, category: 'tubercules', commune: 'Cotonou', description: 'Banane frite', imageFile: 'aliko.jpg' },
-  { name: 'Beignets', price: 1500, unit: 'sachet', stock_qty: 40, category: 'legumes', commune: 'Abomey-Calavi', description: 'Beignets frits', imageFile: 'beignets.jpg' },
-  { name: 'Kléklé', price: 1500, unit: 'sachet', stock_qty: 45, category: 'legumes', commune: 'Porto-Novo', description: 'Galette croustillante', imageFile: 'klekle.jpg' },
-  { name: 'Toubani', price: 1500, unit: 'sachet', stock_qty: 35, category: 'legumes', commune: 'Djougou', description: 'Mets traditionnel vapeur', imageFile: 'toubani.jpg' },
-  
-  // Boissons
-  { name: 'Adoyo', price: 1500, unit: 'litre', stock_qty: 60, category: 'autre', commune: 'Porto-Novo', description: 'Boisson fermentée', imageFile: 'adoyo.jpg' },
-  { name: 'Atan', price: 1500, unit: 'litre', stock_qty: 30, category: 'autre', commune: 'Ouémé', description: 'Vin de palme frais', imageFile: 'atan.jpg' },
-  { name: 'Bissap', price: 1500, unit: 'litre', stock_qty: 50, category: 'autre', commune: 'Cotonou', description: 'Boisson hibiscus', imageFile: 'bissap.jpg' },
-  { name: 'Sodabi', price: 1500, unit: 'litre', stock_qty: 25, category: 'autre', commune: 'Cotonou', description: 'Alcool distillé', imageFile: 'sodabi.jpg' },
-  { name: 'Jus de tamarin', price: 1500, unit: 'litre', stock_qty: 40, category: 'autre', commune: 'Port-Novo', description: 'Jus acidulé', imageFile: 'tamarin.jpg' },
-  { name: 'Tchakpalo', price: 1500, unit: 'litre', stock_qty: 35, category: 'autre', commune: 'Djougou', description: 'Bière traditionnelle', imageFile: 'tchakpalo.jpg' },
-  { name: 'Tchoukoutou', price: 1500, unit: 'litre', stock_qty: 35, category: 'autre', commune: 'Natitingou', description: 'Bière artisanale', imageFile: 'tchoukoutou.jpg' },
-  
-  // Bouillies/Céréales
-  { name: 'Aklui', price: 1500, unit: 'sachet', stock_qty: 45, category: 'cereales', commune: 'Au Sud', description: 'Bouillie fermentée maïs', imageFile: 'aklui.jpg' },
-  { name: 'Bouillie de Gari', price: 1500, unit: 'sachet', stock_qty: 50, category: 'cereales', commune: 'Allada', description: 'Gari bouilli', imageFile: 'gari.jpg' },
-  { name: 'Bouillie de mil', price: 1500, unit: 'sachet', stock_qty: 50, category: 'cereales', commune: 'Zones urbaines', description: 'Bouillie de mil', imageFile: 'mil.jpg' },
-  { name: 'Bouillie de soja', price: 1500, unit: 'sachet', stock_qty: 45, category: 'oleagineux', commune: 'Abomey-Calavi', description: 'Bouillie de soja', imageFile: 'soja.jpg' },
-  
-  // Grillades
-  { name: 'Viande d\'agouti', price: 1500, unit: 'kg', stock_qty: 25, category: 'autre', commune: 'Sô-Ava', description: 'Viande grillée', imageFile: 'agouti.jpg' },
-  { name: 'Brochettes de viande', price: 1500, unit: 'kg', stock_qty: 40, category: 'autre', commune: 'Djougou', description: 'Viande grillée', imageFile: 'brochettes.jpg' },
-  { name: 'Brochettes d\'escargot', price: 1500, unit: 'kg', stock_qty: 30, category: 'autre', commune: 'Abomey-Calavi', description: 'Escargots grillés', imageFile: 'escargot.jpg' },
-  { name: 'Wagashi', price: 1500, unit: 'kg', stock_qty: 35, category: 'autre', commune: 'Parakou', description: 'Fromage grillé', imageFile: 'fromage.jpg' },
-  { name: 'Hanlan', price: 1500, unit: 'kg', stock_qty: 40, category: 'autre', commune: 'Porto-Novo', description: 'Viande de porc grillée', imageFile: 'hanlan.jpg' },
-  { name: 'Méchoui local', price: 1500, unit: 'kg', stock_qty: 20, category: 'autre', commune: 'Djougou', description: 'Agneau rôti', imageFile: 'mechoui.jpg' },
-  
-  // Sauces
-  { name: 'Sauce d\'arachide', price: 1500, unit: 'kg', stock_qty: 40, category: 'autre', commune: 'Abomey', description: 'Sauce riche', imageFile: 'arachide.jpg' },
-  { name: 'Sauce de crin-crin', price: 1500, unit: 'kg', stock_qty: 30, category: 'autre', commune: 'Cotonou', description: 'Sauce verte', imageFile: 'crin-crin.jpg' },
-  { name: 'Sauce feuille', price: 1500, unit: 'kg', stock_qty: 35, category: 'autre', commune: 'Natitingou', description: 'Sauce feuilles', imageFile: 'feuille.jpg' },
-  { name: 'Sauce gombo', price: 1500, unit: 'kg', stock_qty: 25, category: 'autre', commune: 'Mono', description: 'Sauce gluante', imageFile: 'gombo.jpg' },
-  { name: 'Sauce graine', price: 1500, unit: 'kg', stock_qty: 40, category: 'autre', commune: 'Bohicon', description: 'À base de noix de palme', imageFile: 'graine.jpg' },
-  { name: 'Sauce tomate', price: 1500, unit: 'kg', stock_qty: 45, category: 'autre', commune: 'Porto-Novo', description: 'Sauce rouje', imageFile: 'tomate.jpg' },
+// ===== TUBERCULES =====
+// Igname, Taro, Pomme de terre, Patate douce, Manioc
+const tubercules = [
+  { name: 'Igname', price: 2500, unit: 'kg', stock_qty: 40, category: 'tubercules', commune: 'Sakété', description: 'Igname fraîche', imageFile: 'igname.png' },
+  { name: 'Taro', price: 2200, unit: 'kg', stock_qty: 35, category: 'tubercules', commune: 'Ouidah', description: 'Taro de qualité', imageFile: 'taro.jpg' },
+  { name: 'Pomme de Terre', price: 2000, unit: 'kg', stock_qty: 50, category: 'tubercules', commune: 'Parakou', description: 'Pomme de terre locale', imageFile: 'pommeTerre.jpg' },
+  { name: 'Patate Douce', price: 1800, unit: 'kg', stock_qty: 45, category: 'tubercules', commune: 'Djougou', description: 'Patate douce riche', imageFile: 'patate_douce.jpg' },
+  { name: 'Manioc', price: 1500, unit: 'kg', stock_qty: 60, category: 'tubercules', commune: 'Cotonou', description: 'Racine de manioc frais', imageFile: 'manioc.jpg' },
 ];
 
-// Mapper les fichiers aux catégories
+// ===== CÉRÉALES =====
+// Fonio, Maïs blanc, Maïs jaune, Mil, Soja, Riz, Sorgho
+const cereales = [
+  { name: 'Fonio', price: 3500, unit: 'kg', stock_qty: 30, category: 'cereales', commune: 'Natitingou', description: 'Fonio décortiqué', imageFile: 'fonio.jpg' },
+  { name: 'Maïs Blanc', price: 2200, unit: 'kg', stock_qty: 55, category: 'cereales', commune: 'Parakou', description: 'Maïs blanc fermier', imageFile: 'maïs_blanc.jpg' },
+  { name: 'Maïs Jaune', price: 2200, unit: 'kg', stock_qty: 50, category: 'cereales', commune: 'Ouémé', description: 'Maïs jaune sec', imageFile: 'maïs_jaune.jpg' },
+  { name: 'Mil', price: 2000, unit: 'kg', stock_qty: 40, category: 'cereales', commune: 'Djougou', description: 'Mil grain', imageFile: 'mil.webp' },
+  { name: 'Soja', price: 3000, unit: 'kg', stock_qty: 35, category: 'cereales', commune: 'Abomey-Calavi', description: 'Soja sec', imageFile: 'soja.jpg' },
+  { name: 'Riz', price: 4000, unit: 'kg', stock_qty: 45, category: 'cereales', commune: 'Sô-Ava', description: 'Riz local blanc', imageFile: 'riz.jpg' },
+  { name: 'Sorgho', price: 2100, unit: 'kg', stock_qty: 38, category: 'cereales', commune: 'Kandi', description: 'Sorgho grain', imageFile: 'sorgho.webp' },
+];
+
+// ===== OLÉAGINEUX =====
+// Palmier, Néré, Arachide
+const oleagineux = [
+  { name: 'Palmier', price: 2800, unit: 'kg', stock_qty: 25, category: 'oleagineux', commune: 'Allada', description: 'Fruit du palmier', imageFile: 'palmier.jpg' },
+  { name: 'Néré', price: 3200, unit: 'kg', stock_qty: 20, category: 'oleagineux', commune: 'Lokossa', description: 'Graines de néré', imageFile: 'Nere.jpg' },
+  { name: 'Arachide', price: 2500, unit: 'kg', stock_qty: 50, category: 'oleagineux', commune: 'Kandi', description: 'Arachide décortiquée', imageFile: 'arachide.jpg' },
+];
+
+// ===== LÉGUMES =====
+// Amarante, Vernonia, Tomates, Tchayo, Poivron, Piment, Manioc feuilles, Laitue, Gombo, Gboma, Crin-crin, Concombre, Chou, Carotte, Basilic, Baobab
+const legumes = [
+  { name: 'Amarante', price: 1200, unit: 'botte', stock_qty: 40, category: 'legumes', commune: 'Cotonou', description: 'Feuilles d\'amarante frais', imageFile: 'amarante.jpg' },
+  { name: 'Vernonia', price: 1300, unit: 'botte', stock_qty: 35, category: 'legumes', commune: 'Porto-Novo', description: 'Vernonia salade', imageFile: 'vernonia.jpg' },
+  { name: 'Tomates', price: 1500, unit: 'kg', stock_qty: 50, category: 'legumes', commune: 'Allada', description: 'Tomates fraîches', imageFile: 'tomates.jpg' },
+  { name: 'Tchayo', price: 900, unit: 'botte', stock_qty: 45, category: 'legumes', commune: 'Ouidah', description: 'Feuilles de tchayo', imageFile: 'tchayo.jpg' },
+  { name: 'Poivron', price: 1800, unit: 'kg', stock_qty: 30, category: 'legumes', commune: 'Abomey-Calavi', description: 'Poivron rouge/vert', imageFile: 'poivron.png' },
+  { name: 'Piment', price: 1400, unit: 'kg', stock_qty: 35, category: 'legumes', commune: 'Porto-Novo', description: 'Piment frais', imageFile: 'piment.jpg' },
+  { name: 'Manioc Feuilles', price: 1000, unit: 'botte', stock_qty: 50, category: 'legumes', commune: 'Djougou', description: 'Feuilles de manioc fra…îches', imageFile: 'manioc.jpg' },
+  { name: 'Laitue', price: 1200, unit: 'botte', stock_qty: 40, category: 'legumes', commune: 'Parakou', description: 'Laitue tendre', imageFile: 'laitue.jpg' },
+  { name: 'Gombo', price: 1300, unit: 'kg', stock_qty: 45, category: 'legumes', commune: 'Mono', description: 'Gombo frais', imageFile: 'gombo.jpg' },
+  { name: 'Gboma', price: 1100, unit: 'botte', stock_qty: 35, category: 'legumes', commune: 'Zagnanado', description: 'Feuilles de gboma', imageFile: 'gboma.png' },
+  { name: 'Crin-crin', price: 1250, unit: 'botte', stock_qty: 30, category: 'legumes', commune: 'Cotonou', description: 'Crin-crin vert', imageFile: 'crin-crin.jpg' },
+  { name: 'Concombre', price: 1100, unit: 'kg', stock_qty: 40, category: 'legumes', commune: 'Allada', description: 'Concombre frais', imageFile: 'concombre.jpg' },
+  { name: 'Chou', price: 1500, unit: 'kg', stock_qty: 35, category: 'legumes', commune: 'Parakou', description: 'Chou blanc/rouge', imageFile: 'chou.webp' },
+  { name: 'Carotte', price: 1800, unit: 'kg', stock_qty: 30, category: 'legumes', commune: 'Abomey-Calavi', description: 'Carotte orange', imageFile: 'carotte.jpg' },
+  { name: 'Basilic', price: 900, unit: 'botte', stock_qty: 25, category: 'legumes', commune: 'Cotonou', description: 'Basilic frais', imageFile: 'basilic.jpg' },
+  { name: 'Baobab', price: 1000, unit: 'botte', stock_qty: 20, category: 'legumes', commune: 'Djougou', description: 'Feuilles de baobab', imageFile: 'baobab.jpg' },
+];
+
+// ===== RACINES & HUILES =====
+// Souchet, Oignon, Huile rouge, Huile d\'arachide, Gingembre, Curcuma, Coco, Beurre de Karité, Ail
+const racinesHuiles = [
+  { name: 'Souchet', price: 2500, unit: 'kg', stock_qty: 20, category: 'racineshuile', commune: 'Parakou', description: 'Tubercule de souchet', imageFile: 'souchet.webp' },
+  { name: 'Oignon', price: 1600, unit: 'kg', stock_qty: 45, category: 'racineshuile', commune: 'Kandi', description: 'Oignon frais', imageFile: 'oignon.png' },
+  { name: 'Huile Rouge', price: 5000, unit: 'litre', stock_qty: 15, category: 'racineshuile', commune: 'Cotonou', description: 'Huile de palme pure', imageFile: 'huileRouge.jpg' },
+  { name: 'Huile d\'Arachide', price: 4500, unit: 'litre', stock_qty: 20, category: 'racineshuile', commune: 'Abomey', description: 'Huile d\'arachide pressée', imageFile: 'huileArachide.webp' },
+  { name: 'Gingembre', price: 3000, unit: 'kg', stock_qty: 25, category: 'racineshuile', commune: 'Ouémé', description: 'Gingembre frais', imageFile: 'gingembre.webp' },
+  { name: 'Curcuma', price: 4000, unit: 'kg', stock_qty: 18, category: 'racineshuile', commune: 'Mono', description: 'Curcuma sec', imageFile: 'curcuma.webp' },
+  { name: 'Coco', price: 2000, unit: 'kg', stock_qty: 30, category: 'racineshuile', commune: 'Ouidah', description: 'Noix de coco', imageFile: 'coco.jpg' },
+  { name: 'Beurre de Karité', price: 6000, unit: 'kg', stock_qty: 12, category: 'racineshuile', commune: 'Dikoa', description: 'Beurre de karité pur', imageFile: 'BeurreKarite.webp' },
+  { name: 'Ail', price: 3500, unit: 'kg', stock_qty: 22, category: 'racineshuile', commune: 'Parakou', description: 'Ail frais', imageFile: 'ail.webp' },
+];
+
+// ===== AUTRES (Légumineuses & Fruits) =====
+// Haricot, Crevettes, Banane Plantain, Banane, Ananas, Papaye, Noix de Cajou, Lentille locale, Poivre, Piment Sec, Sel
+const autres = [
+  { name: 'Haricot', price: 2800, unit: 'kg', stock_qty: 35, category: 'autre', commune: 'Abomey-Calavi', description: 'Haricot sec', imageFile: 'haricot.jpg' },
+  { name: 'Crevettes', price: 8000, unit: 'kg', stock_qty: 10, category: 'autre', commune: 'Sô-Ava', description: 'Crevettes séchées', imageFile: 'crevettes.webp' },
+  { name: 'Banane Plantain', price: 2000, unit: 'kg', stock_qty: 40, category: 'autre', commune: 'Ouidah', description: 'Banane plantain mûre', imageFile: 'bananePlantain.jpg' },
+  { name: 'Banane', price: 1800, unit: 'kg', stock_qty: 45, category: 'autre', commune: 'Zagnanado', description: 'Banane douce', imageFile: 'banane.jpg' },
+  { name: 'Ananas', price: 1500, unit: 'unite', stock_qty: 50, category: 'autre', commune: 'Allada', description: 'Ananas sucré', imageFile: 'ananas.webp' },
+  { name: 'Papaye', price: 1200, unit: 'unite', stock_qty: 40, category: 'autre', commune: 'Ouidah', description: 'Papaye fraîche', imageFile: 'papaye.webp' },
+  { name: 'Noix de Cajou', price: 7000, unit: 'kg', stock_qty: 15, category: 'autre', commune: 'Parakou', description: 'Noix de cajou décortiquée', imageFile: 'noixCajou.jpg' },
+  { name: 'Lentille Locale', price: 3200, unit: 'kg', stock_qty: 25, category: 'autre', commune: 'Kandi', description: 'Lentille locale séchée', imageFile: 'lentilleLocale.jpg' },
+  { name: 'Poivre', price: 5000, unit: 'kg', stock_qty: 12, category: 'autre', commune: 'Adjohoun', description: 'Poivre moulu', imageFile: 'poivre.jpg' },
+  { name: 'Piment Sec', price: 4500, unit: 'kg', stock_qty: 18, category: 'autre', commune: 'Porto-Novo', description: 'Piment sec moulu', imageFile: 'pimentSeche.jpg' },
+  { name: 'Sel', price: 800, unit: 'kg', stock_qty: 100, category: 'autre', commune: 'Sô-Ava', description: 'Sel marin pur', imageFile: 'sel.jpg' },
+];
+
+const produits = [
+  ...tubercules,
+  ...cereales,
+  ...oleagineux,
+  ...legumes,
+  ...racinesHuiles,
+  ...autres
+];
+
+// Mapper les fichiers aux catégories (avec structure dossier double)
 const imageCategoryMap = {
-  'ablo.jpg': 'accompagnements',
-  'aliko.jpg': 'accompagnements',
-  'beignets.jpg': 'accompagnements',
-  'klekle.jpg': 'accompagnements',
-  'toubani.jpg': 'accompagnements',
-  'adoyo.jpg': 'boissons',
-  'atan.jpg': 'boissons',
-  'bissap.jpg': 'boissons',
-  'sodabi.jpg': 'boissons',
-  'tamarin.jpg': 'boissons',
-  'tchakpalo.jpg': 'boissons',
-  'tchoukoutou.jpg': 'boissons',
-  'aklui.jpg': 'bouillies',
-  'gari.jpg': 'bouillies',
-  'mil.jpg': 'bouillies',
-  'soja.jpg': 'bouillies',
-  'agouti.jpg': 'grillades',
-  'brochettes.jpg': 'grillades',
-  'escargot.jpg': 'grillades',
-  'fromage.jpg': 'grillades',
-  'hanlan.jpg': 'grillades',
-  'mechoui.jpg': 'grillades',
-  'arachide.jpg': 'sauces',
-  'crin-crin.jpg': 'sauces',
-  'feuille.jpg': 'sauces',
-  'gombo.jpg': 'sauces',
-  'graine.jpg': 'sauces',
-  'tomate.jpg': 'sauces'
+  // Tubercules
+  'igname.png': 'Tubercules',
+  'taro.jpg': 'Tubercules',
+  'pommeTerre.jpg': 'Tubercules',
+  'patate_douce.jpg': 'Tubercules',
+  'manioc.jpg': 'Tubercules',
+  
+  // Céréales
+  'fonio.jpg': 'Céréales',
+  'maïs_blanc.jpg': 'Céréales',
+  'maïs_jaune.jpg': 'Céréales',
+  'mil.webp': 'Céréales',
+  'soja.jpg': 'Céréales',
+  'riz.jpg': 'Céréales',
+  'sorgho.webp': 'Céréales',
+  
+  // Oléagineux
+  'palmier.jpg': 'Oléagineux',
+  'Nere.jpg': 'Oléagineux',
+  'arachide.jpg': 'Oléagineux',
+  
+  // Légumes
+  'amarante.jpg': 'Légumes',
+  'vernonia.jpg': 'Légumes',
+  'tomates.jpg': 'Légumes',
+  'tchayo.jpg': 'Légumes',
+  'poivron.png': 'Légumes',
+  'piment.jpg': 'Légumes',
+  'laitue.jpg': 'Légumes',
+  'gombo.jpg': 'Légumes',
+  'gboma.png': 'Légumes',
+  'crin-crin.jpg': 'Légumes',
+  'concombre.jpg': 'Légumes',
+  'chou.webp': 'Légumes',
+  'carotte.jpg': 'Légumes',
+  'basilic.jpg': 'Légumes',
+  'baobab.jpg': 'Légumes',
+  
+  // Racines_Huiles
+  'souchet.webp': 'Racines_Huiles',
+  'oignon.png': 'Racines_Huiles',
+  'huileRouge.jpg': 'Racines_Huiles',
+  'huileArachide.webp': 'Racines_Huiles',
+  'gingembre.webp': 'Racines_Huiles',
+  'curcuma.webp': 'Racines_Huiles',
+  'coco.jpg': 'Racines_Huiles',
+  'BeurreKarite.webp': 'Racines_Huiles',
+  'ail.webp': 'Racines_Huiles',
+  
+  // Autres
+  'haricot.jpg': 'Autres',
+  'crevettes.webp': 'Autres',
+  'bananePlantain.jpg': 'Autres',
+  'banane.jpg': 'Autres',
+  'ananas.webp': 'Autres',
+  'papaye.webp': 'Autres',
+  'noixCajou.jpg': 'Autres',
+  'lentilleLocale.jpg': 'Autres',
+  'poivre.jpg': 'Autres',
+  'pimentSeche.jpg': 'Autres',
+  'sel.jpg': 'Autres'
 };
 
 async function uploadImageToCloudinary(imageFile) {
   try {
     const category = imageCategoryMap[imageFile];
-    const frontendPath = path.join(__dirname, `../../../frontend/src/assets/images/${category}/${imageFile}`);
+    // Structure: frontend/src/assets/images/{Category}/{Category}/{imageFile}
+    const frontendPath = path.join(__dirname, `../../../frontend/src/assets/images/${category}/${category}/${imageFile}`);
     
     if (!fs.existsSync(frontendPath)) {
       console.warn(`⚠️ Fichier non trouvé: ${frontendPath}`);
@@ -99,7 +183,7 @@ async function uploadImageToCloudinary(imageFile) {
       overwrite: true
     });
 
-    console.log(`✅ Image uploadée: ${imageFile}`);
+    console.log(`✅ Image uploadée: ${imageFile} (${category})`);
     return result.secure_url;
   } catch (error) {
     console.error(`❌ Erreur upload ${imageFile}:`, error.message);

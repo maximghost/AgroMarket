@@ -136,7 +136,7 @@ export const createOrder = async (req, res) => {
       })
     }
 
-    if (!['kkiapay', 'cash_on_delivery'].includes(payment_method)) {
+    if (!['kkiapay', 'cash_on_delivery', 'simulation'].includes(payment_method)) {
       return res.status(400).json({
         success: false,
         error: {
@@ -283,6 +283,90 @@ export const cancelOrder = async (req, res) => {
       data: order,
       meta: {
         message: 'Commande annulée'
+      }
+    })
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'INTERNAL_SERVER_ERROR',
+        message: error.message
+      }
+    })
+  }
+}
+
+/**
+ * POST /orders/:id/confirm-payment
+ * Confirmer le paiement d'une commande (pour MVP/simulation)
+ */
+export const confirmPayment = async (req, res) => {
+  try {
+    const { id } = req.params
+    const userId = req.user.id
+    const { payment_method, amount } = req.body
+
+    const order = await Order.findById(id)
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'NOT_FOUND',
+          message: 'Commande non trouvée'
+        }
+      })
+    }
+
+    // Vérifier que c'est la commande de l'utilisateur
+    if (order.buyer_id.toString() !== userId) {
+      return res.status(403).json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: 'Accès refusé'
+        }
+      })
+    }
+
+    // Vérifier que la commande n'est pas déjà payée
+    if (order.payment_status === 'paid') {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'ALREADY_PAID',
+          message: 'Cette commande est déjà payée'
+        }
+      })
+    }
+
+    // Vérifier que le montant correspond
+    if (amount && amount !== order.total_amount) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'AMOUNT_MISMATCH',
+          message: 'Le montant ne correspond pas'
+        }
+      })
+    }
+
+    // Mettre à jour le statut de paiement
+    order.payment_status = 'paid'
+    order.payment_method = payment_method || order.payment_method
+    
+    // Pour les paiements simulés, marquer aussi la commande comme confirmée
+    if (payment_method === 'simulation') {
+      order.status = 'confirmed'
+    }
+    
+    await order.save()
+
+    res.json({
+      success: true,
+      data: order,
+      meta: {
+        message: 'Paiement confirmé avec succès'
       }
     })
   } catch (error) {

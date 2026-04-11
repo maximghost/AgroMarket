@@ -4,6 +4,7 @@ import { useCart } from "../hooks/useCart";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../hooks/useToast";
 import { useKkiapay } from "../hooks/useKkiapay";
+import PaymentSimulationModal from "../components/Payment/PaymentSimulationModal";
 import { Trash2, Plus, Minus, ShoppingCart, AlertCircle, CreditCard } from 'lucide-react';
 import api from '../services/api';
 
@@ -17,6 +18,8 @@ const CartPage = () => {
   const [deletingItems, setDeletingItems] = useState({});
   const [confirmDelete, setConfirmDelete] = useState({ show: false, itemId: null, productName: null });
   const [processingPayment, setProcessingPayment] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [currentOrder, setCurrentOrder] = useState(null);
 
   // Calculer le sous-total
   const subtotal = cart?.items?.reduce((sum, item) => {
@@ -54,7 +57,7 @@ const CartPage = () => {
     }
   };
 
-  // Handler pour initier le paiement via KKiaPay
+  // Handler pour initier le paiement via simulation
   const handlePayment = async () => {
     if (!user?.phone || !user?.full_name) {
       showToast('Données profil incomplètes. Veuillez mettre à jour votre profil.', 'error');
@@ -79,27 +82,36 @@ const CartPage = () => {
           indications: ''
         },
         delivery_type: 'standard',
-        payment_method: 'kkiapay',
+        payment_method: 'simulation', // Utiliser "simulation" pour MVP
         notes: ''
       });
 
       const order = orderResponse.data.data;
       console.log('✅ Commande créée:', order._id);
+      
+      // 2. Afficher la modal de simulation de paiement
+      setCurrentOrder(order);
+      setShowPaymentModal(true);
       setProcessingPayment(false);
-
-      // 2. Ouvrir le widget KKiaPay
-      await initiatePayment({
-        amount: subtotal,
-        phone: user.phone,
-        name: user.full_name,
-        orderId: order._id,
-      });
 
     } catch (error) {
       console.error('Erreur création commande:', error);
       showToast('Erreur lors de la création de la commande', 'error');
       setProcessingPayment(false);
     }
+  };
+
+  // Handler pour succès du paiement
+  const handlePaymentSuccess = (order) => {
+    setShowPaymentModal(false);
+    // Rediriger vers la page de confirmation
+    navigate(`/order-confirmation/${order._id}`);
+  };
+
+  // Handler pour fermeture de la modal
+  const handlePaymentClose = () => {
+    setShowPaymentModal(false);
+    setCurrentOrder(null);
   };
 
   useEffect(() => {
@@ -288,6 +300,17 @@ const CartPage = () => {
             </div>
           </div>
         </>
+      )}
+
+      {/* Modal de simulation de paiement */}
+      {showPaymentModal && currentOrder && (
+        <PaymentSimulationModal
+          amount={subtotal}
+          orderId={currentOrder._id}
+          customerName={user?.full_name}
+          onSuccess={handlePaymentSuccess}
+          onClose={handlePaymentClose}
+        />
       )}
     </div>
   );
