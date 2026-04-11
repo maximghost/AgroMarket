@@ -3,11 +3,29 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import connectDB from './config/database.js'
 import userRoutes from './routes/userRoutes.js'
+import producteurRoutes from './routes/producteurRoutes.js'
+
+import path from "path";
+import { fileURLToPath } from "url";
+import fs from "fs";
 
 dotenv.config()
 connectDB()
 
 const app = express()
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
+
+// Vérifie et crée le dossier si absent
+const imagesDir = path.join(__dirname, "imagesDeProduits");
+if (!fs.existsSync(imagesDir)) {
+  fs.mkdirSync(imagesDir, { recursive: true });
+}
+
+
+app.use("/imagesDeProduits", express.static(imagesDir));
 
 // Middleware
 app.use(cors())
@@ -16,6 +34,7 @@ app.use(express.urlencoded({ extended: true }))
 
 // Routes principales
 app.use('/users', userRoutes)
+app.use('/producteurs', producteurRoutes)
 
 // Route de santé
 app.get('/api/health', (req, res) => {
