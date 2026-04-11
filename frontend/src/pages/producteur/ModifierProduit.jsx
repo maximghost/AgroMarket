@@ -8,12 +8,6 @@ const SHARED = `
   body{font-family:'Space Grotesk',sans-serif;}
 `;
 
-// Simulated DB — all product IDs work including /modifier/1
-const MOCK_PRODUCTS = {
-  1: { id:1, nom:'Tomates bio', description:'Tomates fraîches de saison, cultivées sans pesticides', prix:3.50, unite:'kg', stock:12, categorie:'legumes', origine:'France, Bretagne', lot:'A1-2405', dateProduction:'2025-03-15', dateExpiration:'2025-03-29', statut:'actif' },
-  2: { id:2, nom:'Courgettes',  description:'',    prix:2.80, unite:'kg', stock:5,  categorie:'legumes', origine:'France',  lot:'B2-2406', dateProduction:'2025-04-01', dateExpiration:'', statut:'actif' },
-  3: { id:3, nom:'Miel de printemps', description:'', prix:12.0, unite:'pot', stock:0, categorie:'miel_confitures', origine:'Local', lot:'C3-2407', dateProduction:'2025-02-01', dateExpiration:'', statut:'rupture' },
-};
 
 export default function ModifierProduit() {
   const navigate  = useNavigate();
@@ -29,13 +23,37 @@ export default function ModifierProduit() {
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      const product = MOCK_PRODUCTS[parseInt(id)] || MOCK_PRODUCTS[1];
-      if (!product) { setNotFound(true); setLoading(false); return; }
-      setForm(product);
-      setLoading(false);
-    }, 400);
+    const token = localStorage.getItem("token");
+    fetch(`http://localhost:5000/producteurs/produits/${id}`, {
+      headers: { "Authorization": `Bearer ${token}` }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error("Produit introuvable");
+        return res.json();
+      })
+      .then(data => {
+        // Adapter les champs backend vers ton form
+        setForm({
+          nom: data.name || "",
+          description: data.description || "",
+          prix: data.price || "",
+          unite: data.unit || "kg",
+          stock: data.stock_qty || "",
+          categorie: data.category || "legumes",
+          origine: data.commune || "",
+          lot: data.lot || "",
+          dateProduction: data.dateProduction || "",
+          dateExpiration: data.dateExpiration || "",
+          statut: data.is_available ? "actif" : "inactif",
+          image: data.images?.[0] || null
+        });
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error("Erreur produit:", err);
+        setNotFound(true);
+        setLoading(false);
+      });
   }, [id]);
 
   const handleChange = (e) => {

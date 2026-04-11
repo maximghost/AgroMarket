@@ -1,3 +1,4 @@
+
 import mongoose from 'mongoose'
 
 const traceabilitySchema = new mongoose.Schema(
@@ -50,3 +51,4 @@ const traceabilitySchema = new mongoose.Schema(
 )
 
 export default mongoose.model('Traceability', traceabilitySchema)
+

@@ -1,3 +1,4 @@
+
 import mongoose from 'mongoose'
 
 const orderSchema = new mongoose.Schema(
@@ -66,3 +67,4 @@ orderSchema.index({ buyer_id: 1, createdAt: -1 })
 orderSchema.index({ status: 1 })
 
 export default mongoose.model('Order', orderSchema)
+
