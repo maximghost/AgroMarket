@@ -15,10 +15,10 @@ const Login = () => {
     password: '',
   });
 
-  // Si déjà connecté, rediriger vers le catalogue
+  // Si déjà connecté, rediriger selon le rôle
   useEffect(() => {
     if (user) {
-      navigate('/catalogue');
+      navigate(user.role === 'producteur' ? '/producteur' : '/catalogue');
     }
   }, [user, navigate]);
 

@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 const navItems = [
   { to: '/producteur/dashboard',        icon: '◈', label: 'Dashboard'  },
@@ -15,7 +16,17 @@ const MORE_ITEMS   = navItems.slice(4);
 
 export default function LayoutProducteur() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, loading } = useAuth();
   const [moreOpen, setMoreOpen] = useState(false);
+
+  useEffect(() => {
+    if (!loading && (!user || user.role !== 'producteur')) {
+      navigate('/login', { replace: true });
+    }
+  }, [user, loading, navigate]);
+
+  if (loading || !user) return null;
 
   const isActive = (path) =>
     location.pathname === path || location.pathname.startsWith(path + '/');
@@ -334,10 +345,10 @@ export default function LayoutProducteur() {
 
           <div className="sidebar-footer">
             <div className="sidebar-user">
-              <div className="user-avatar">P</div>
+              <div className="user-avatar">{user.full_name?.[0]?.toUpperCase() || 'P'}</div>
               <div className="user-info">
-                <p className="user-name">Producteur</p>
-                <p className="user-role">code33457@gmail.com</p>
+                <p className="user-name">{user.full_name || 'Producteur'}</p>
+                <p className="user-role">{user.email}</p>
               </div>
             </div>
           </div>

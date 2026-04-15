@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../../services/api';
 
 const sharedStyles = `
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:wght@700;900&display=swap');
@@ -20,23 +21,16 @@ export default function DashboardProducteur() {
   const [animated, setAnimated] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem("token"); // récupéré après login
-
-    fetch("http://localhost:5000/producteurs/dashboard", {
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json"
-      }
-    })
-      .then(res => res.json())
-      .then(data => {
+    api.get('/producteurs/dashboard')
+      .then(res => {
+        const data = res.data;
         setStats({
           clients: data.clients,
           commandes: data.commandes,
           revenus: data.revenus,
           produits: data.produits
         });
-        setVentes(data.ventes);
+        setVentes(data.ventes ?? []);
         setLoaded(true);
         setTimeout(() => setAnimated(true), 100);
       })
@@ -223,10 +217,6 @@ export default function DashboardProducteur() {
         <div className="dash-header">
           <h1 className="dash-greeting">Bonjour, <em>Producteur</em> 👋</h1>
           <p className="dash-sub">Voici un aperçu de votre activité aujourd'hui.</p>
-          <div className="dash-confirm">
-            ⚠ Confirmez votre email · code33457@gmail.com
-            <button>Renvoyer</button>
-          </div>
         </div>
 
         {/* Stats */}

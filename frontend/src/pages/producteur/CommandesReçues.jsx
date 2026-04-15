@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../../services/api';
 
 const SHARED = `
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:wght@700;900&display=swap');
@@ -24,11 +25,56 @@ export default function CommandesRecues() {
   const [filter, setFilter]     = useState('toutes');
   const [search, setSearch]     = useState('');
 
-  useEffect(() => { setTimeout(() => { setCommandes(MOCK); setLoading(false); }, 400); }, []);
+  const STATUS_MAP = {
+    pending:   'en_attente',
+    confirmed: 'confirmee',
+    shipped:   'expediee',
+    delivered: 'livree',
+    cancelled: 'rejetee'
+  };
 
-  const handleConfirmer = (id) => setCommandes(c => c.map(x => x.id===id ? {...x,statut:'confirmee'} : x));
-  const handleRejeter   = (id) => { if(window.confirm('Rejeter cette commande ?')) setCommandes(c => c.map(x => x.id===id ? {...x,statut:'rejetee'} : x)); };
-  const handleExpedier  = (id) => setCommandes(c => c.map(x => x.id===id ? {...x,statut:'expediee'} : x));
+  useEffect(() => {
+    api.get('/producteurs/commandes')
+      .then(res => {
+        const mapped = res.data.map(o => ({
+          id: o._id,
+          client: o.delivery_address?.full_name || 'Client',
+          email: '',
+          telephone: o.delivery_address?.phone || '',
+          montantTotal: o.total_amount || 0,
+          statut: STATUS_MAP[o.status] || 'en_attente',
+          produits: (o.items || []).map(i => ({ nom: i.name, quantite: i.qty, lot: i.product_id?.toString().slice(-6) || '' })),
+          date: o.createdAt
+        }));
+        setCommandes(mapped);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Erreur commandes:', err);
+        setCommandes([]);
+        setLoading(false);
+      });
+  }, []);
+
+  const patchStatus = async (id, status) => {
+    try {
+      await api.patch(`/api/v1/orders/${id}/status`, { status });
+    } catch (_) { /* non bloquant en MVP */ }
+  };
+
+  const handleConfirmer = (id) => {
+    patchStatus(id, 'confirmed');
+    setCommandes(c => c.map(x => x.id===id ? {...x,statut:'confirmee'} : x));
+  };
+  const handleRejeter = (id) => {
+    if (!window.confirm('Rejeter cette commande ?')) return;
+    patchStatus(id, 'cancelled');
+    setCommandes(c => c.map(x => x.id===id ? {...x,statut:'rejetee'} : x));
+  };
+  const handleExpedier = (id) => {
+    patchStatus(id, 'shipped');
+    setCommandes(c => c.map(x => x.id===id ? {...x,statut:'expediee'} : x));
+  };
 
   const filtered = commandes.filter(c => {
     if (filter !== 'toutes' && c.statut !== filter) return false;
