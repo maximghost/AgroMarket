@@ -6,6 +6,7 @@ import Header from '../../components/Layout/Header';
 import AuthModal from '../../components/Auth/AuthModal';
 import { useAuth } from '../../hooks/useAuth';
 
+
 const HomePage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
