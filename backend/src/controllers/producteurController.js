@@ -7,23 +7,26 @@ export const getDashboard = async (req, res) => {
   try {
     const producerId = req.user._id; // récupéré via JWT middleware
 
+    // Récupérer les IDs des produits du producteur
+    const productIds = await Product.find({ producer_id: producerId }).distinct('_id');
+
     const produits = await Product.countDocuments({ producer_id: producerId });
-    const commandes = await Order.countDocuments({ "items.producer_id": producerId });
+    const commandes = await Order.countDocuments({ "items.product_id": { $in: productIds } });
     const revenusAgg = await Order.aggregate([
-      { $match: { "items.producer_id": producerId, payment_status: "paid" } },
+      { $match: { "items.product_id": { $in: productIds }, payment_status: "paid" } },
       { $group: { _id: null, total: { $sum: "$total_amount" } } }
     ]);
     const revenus = revenusAgg[0]?.total || 0;
-    const clients = (await Order.distinct("buyer_id", { "items.producer_id": producerId })).length;
+    const clients = (await Order.distinct("buyer_id", { "items.product_id": { $in: productIds } })).length;
 
     // ventes mensuelles (agrégation par mois)
     const ventes = await Order.aggregate([
-      { $match: { "items.producer_id": producerId } },
+      { $match: { "items.product_id": { $in: productIds } } },
       { $unwind: "$items" },
-      { $match: { "items.producer_id": producerId } },
+      { $match: { "items.product_id": { $in: productIds } } },
       {
         $group: {
-          _id: { $month: "$created_at" },
+          _id: { $month: "$createdAt" },
           total: { $sum: "$items.qty" }
         }
       },
@@ -116,7 +119,13 @@ export const deleteProduit = async (req, res) => {
 
 // Commandes
 export const getCommandes = async (req, res) => {
-  const producerId = req.user._id;
-  const commandes = await Order.find({ "items.producer_id": producerId });
-  res.json(commandes);
+  try {
+    const producerId = req.user._id;
+    const productIds = await Product.find({ producer_id: producerId }).distinct('_id');
+    const commandes = await Order.find({ "items.product_id": { $in: productIds } })
+      .sort({ createdAt: -1 });
+    res.json(commandes);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 };

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, Eye, EyeOff, Phone, MapPin, AlertCircle, CheckCircle } from 'lucide-react';
+import { User, Mail, Lock, Eye, EyeOff, Phone, Briefcase, AlertCircle, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
 
 const Register = () => {
@@ -19,7 +19,6 @@ const Register = () => {
     phone: '',
     password: '',
     confirmPassword: '',
-    commune: '',
     role: 'client'
   });
 
@@ -86,13 +85,12 @@ const Register = () => {
         email: formData.email,
         phone: formData.phone || undefined,
         password: formData.password,
-        role: formData.role,
-        commune: formData.commune || undefined
+        role: formData.role
       });
 
       setSuccessMsg('✅ Compte créé avec succès! Redirection...');
       setTimeout(() => {
-        navigate('/catalogue');
+        navigate(formData.role === 'producteur' ? '/producteur' : '/catalogue');
       }, 2000);
     } catch (err) {
       const errorMsg = err.response?.data?.error?.message || 'Erreur lors de l\'inscription';
@@ -180,23 +178,19 @@ const Register = () => {
             </div>
           </div>
 
-          {/* Commune (optionnel) */}
+          {/* Rôle */}
           <div>
-            <label className="block text-sm font-medium text-gray-700">Commune</label>
+            <label className="block text-sm font-medium text-gray-700">Vous êtes ? *</label>
             <div className="mt-1 relative">
-              <MapPin className="absolute left-3 top-3 text-gray-400" size={18} />
+              <Briefcase className="absolute left-3 top-3 text-gray-400" size={18} />
               <select
-                name="commune"
-                value={formData.commune}
+                name="role"
+                value={formData.role}
                 onChange={handleChange}
                 className="pl-10 w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition-all"
               >
-                <option value="">Sélectionner votre commune</option>
-                <option value="Cotonou">Cotonou</option>
-                <option value="Porto-Novo">Porto-Novo</option>
-                <option value="Parakou">Parakou</option>
-                <option value="Abomey">Abomey</option>
-                <option value="Duekoué">Duekoué</option>
+                <option value="client">Client (Acheteur)</option>
+                <option value="producteur">Producteur (Vendeur)</option>
               </select>
             </div>
           </div>

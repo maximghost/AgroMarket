@@ -39,7 +39,10 @@ const productSchema = new mongoose.Schema(
       required: true,
       index: true
     },
-    images: [String], // URLs des images stockées sur R2
+    images: [String],
+    lot: String,
+    dateProduction: Date,
+    dateExpiration: Date,
     traceability_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Traceability',

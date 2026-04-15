@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 
 const SHARED = `
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:wght@700;900&display=swap');
@@ -49,46 +50,29 @@ export default function AjouterProduit() {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem("token");
-
       let imageUrl = null;
       if (form.image) {
-        const cloudForm = new FormData();
-        cloudForm.append("file", form.image);
-        cloudForm.append("upload_preset", "agromarket"); // ton preset Cloudinary
-
-        const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/<cloud_name>/image/upload`, {
-          method: "POST",
-          body: cloudForm
+        const formData = new FormData();
+        formData.append("image", form.image);
+        const uploadRes = await api.post('/upload/product-image', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
         });
-        const cloudData = await cloudRes.json();
-        imageUrl = cloudData.secure_url;
+        imageUrl = uploadRes.data.data.url;
       }
 
-      // Envoi JSON au backend
-      const res = await fetch("http://localhost:5000/producteurs/produits", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          name: form.nom,
-          description: form.description,
-          price: parseFloat(form.prix),
-          unit: form.unite,
-          stock_qty: parseInt(form.stock, 10),
-          category: form.categorie,
-          commune: form.origine,
-          lot: form.lot,
-          dateProduction: form.dateProduction,
-          dateExpiration: form.dateExpiration,
-          images: imageUrl ? [imageUrl] : []
-        })
+      const { data } = await api.post('/producteurs/produits', {
+        name: form.nom,
+        description: form.description,
+        price: parseFloat(form.prix),
+        unit: form.unite,
+        stock_qty: parseInt(form.stock, 10),
+        category: form.categorie,
+        commune: form.origine,
+        lot: form.lot,
+        dateProduction: form.dateProduction,
+        dateExpiration: form.dateExpiration,
+        images: imageUrl ? [imageUrl] : []
       });
-
-      if (!res.ok) throw new Error("Erreur lors de la création du produit");
-      const data = await res.json();
 
       console.log("Produit créé:", data);
       setLoading(false);
@@ -263,7 +247,11 @@ export default function AjouterProduit() {
                   <input type="number" step="0.01" name="prix" value={form.prix} onChange={handleChange}
                     className={inputClass(errors.prix)} placeholder="0.00" />
                   <select name="unite" value={form.unite} onChange={handleChange} className="form-input">
-                    {['kg','g','L','pièce','pot','botte'].map(u => <option key={u}>{u}</option>)}
+                    <option value="kg">kg</option>
+                    <option value="litre">litre</option>
+                    <option value="sachet">sachet</option>
+                    <option value="botte">botte</option>
+                    <option value="unite">unité</option>
                   </select>
                 </div>
                 {errors.prix && <span className="form-error">{errors.prix}</span>}
@@ -279,12 +267,11 @@ export default function AjouterProduit() {
               <div className="form-field">
                 <label className="form-label">Catégorie</label>
                 <select name="categorie" value={form.categorie} onChange={handleChange} className="form-input">
+                  <option value="cereales">Céréales</option>
                   <option value="legumes">Légumes</option>
-                  <option value="fruits">Fruits</option>
-                  <option value="produits_laitiers">Produits laitiers</option>
-                  <option value="viandes">Viandes</option>
-                  <option value="miel_confitures">Miel & Confitures</option>
-                  <option value="boissons">Boissons</option>
+                  <option value="tubercules">Tubercules</option>
+                  <option value="racineshuile">Racines & Huiles</option>
+                  <option value="oleagineux">Oléagineux</option>
                   <option value="autres">Autres</option>
                 </select>
               </div>

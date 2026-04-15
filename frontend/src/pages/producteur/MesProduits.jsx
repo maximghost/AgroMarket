@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../../services/api';
 
 const SHARED = `
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:wght@700;900&display=swap');
@@ -14,29 +15,18 @@ export default function MesProduits() {
   const [loading,  setLoading]  = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-
-    fetch("http://localhost:5000/producteurs/produits", {
-      headers: {
-        "Authorization": `Bearer ${token}`
-      }
-    })
+    api.get('/producteurs/produits')
       .then(res => {
-        if (!res.ok) throw new Error("Unauthorized");
-        return res.json();
-      })
-      .then(data => {
-        // Adapter les champs backend vers ceux attendus par le frontend
-        const mapped = data.map(p => ({
+        const mapped = res.data.map(p => ({
           id: p._id,
           nom: p.name,
           prix: typeof p.price === "number" ? p.price : 0,
           unite: p.unit,
           stock: p.stock_qty,
-          emoji: "📦", // valeur par défaut si pas d’image
+          imageUrl: p.images?.[0] || null,
           lot: p.lot || p._id.slice(-6),
           origine: p.commune || "Local",
-          statut: p.stock_qty > 0 ? "actif" : "rupture",
+          statut: p.is_available && p.stock_qty > 0 ? "actif" : "rupture",
           images: p.images || []
         }));
         setProduits(mapped);
@@ -44,13 +34,19 @@ export default function MesProduits() {
       })
       .catch(err => {
         console.error("Erreur produits:", err);
-        setProduits([]); // évite le crash
+        setProduits([]);
         setLoading(false);
       });
   }, []);
 
-  const handleSupprimer = (id) => {
-    if (window.confirm('Supprimer ce produit ?')) setProduits(p => p.filter(x => x.id !== id));
+  const handleSupprimer = async (id) => {
+    if (!window.confirm('Supprimer ce produit ?')) return;
+    try {
+      await api.delete(`/producteurs/produits/${id}`);
+      setProduits(p => p.filter(x => x.id !== id));
+    } catch (err) {
+      console.error("Erreur suppression:", err);
+    }
   };
 
   if (loading) return (
@@ -226,7 +222,10 @@ export default function MesProduits() {
             {produits.map(p => (
               <div key={p.id} className="product-card">
                 <div className="product-img">
-                  {p.emoji}
+                  {p.imageUrl
+                    ? <img src={p.imageUrl} alt={p.nom} style={{width:'100%',height:'100%',objectFit:'cover'}} />
+                    : '📦'
+                  }
                   <span className={`product-badge ${p.statut === 'actif' ? 'badge-actif' : 'badge-rupture'}`}>
                     {p.statut === 'actif' ? '● Actif' : '○ Rupture'}
                   </span>

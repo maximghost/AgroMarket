@@ -14,7 +14,7 @@ export const getProducts = async (req, res) => {
       commune,
       category,
       search,
-      sort = 'created_at',
+      sort = 'createdAt',
       order = 'desc'
     } = req.query
 

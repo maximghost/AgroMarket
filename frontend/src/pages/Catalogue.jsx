@@ -57,15 +57,15 @@ const Catalogue = () => {
   }
 
   // Catégories
-  const categories = ['Tous', 'cereales', 'legumes', 'tubercules', 'racineshuile', 'oleagineux', 'autre']
+  const categories = ['Tous', 'cereales', 'legumes', 'tubercules', 'racineshuile', 'oleagineux', 'autres']
   const categoryLabels = {
     'cereales': 'Céréales', 'legumes': 'Légumes', 'tubercules': 'Tubercules',
-    'racineshuile': 'Racines & Huile', 'oleagineux': 'Oléagineux', 'autre': 'Autres'
+    'racineshuile': 'Racines & Huile', 'oleagineux': 'Oléagineux', 'autres': 'Autres'
   }
 
   // Filtrer
   const produitsFiltres = produits.filter(p => {
-    const matchRecherche = p.name.toLowerCase().includes(recherche.toLowerCase())
+    const matchRecherche = (p.name || '').toLowerCase().includes(recherche.toLowerCase())
     const matchCategory = category === 'Tous' || p.category === category
     return matchRecherche && matchCategory
   })

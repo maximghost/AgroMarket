@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import api from '../../services/api';
 
 const SHARED = `
   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Playfair+Display:wght@700;900&display=swap');
@@ -23,16 +24,9 @@ export default function ModifierProduit() {
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    fetch(`http://localhost:5000/producteurs/produits/${id}`, {
-      headers: { "Authorization": `Bearer ${token}` }
-    })
+    api.get(`/producteurs/produits/${id}`)
       .then(res => {
-        if (!res.ok) throw new Error("Produit introuvable");
-        return res.json();
-      })
-      .then(data => {
-        // Adapter les champs backend vers ton form
+        const data = res.data;
         setForm({
           nom: data.name || "",
           description: data.description || "",
@@ -74,15 +68,43 @@ export default function ModifierProduit() {
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
     setSaving(true);
-    setTimeout(() => {
-      console.log('Produit modifié:', form);
-      setSaving(false);
+    try {
+      let imageUrl = typeof form.image === 'string' ? form.image : null;
+
+      // Si un nouveau fichier image a été sélectionné
+      if (form.image && typeof form.image === 'object') {
+        const formData = new FormData();
+        formData.append("image", form.image);
+        const uploadRes = await api.post('/upload/product-image', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        imageUrl = uploadRes.data.data.url;
+      }
+
+      await api.put(`/producteurs/produits/${id}`, {
+        name: form.nom,
+        description: form.description,
+        price: parseFloat(form.prix),
+        unit: form.unite,
+        stock_qty: parseInt(form.stock, 10),
+        category: form.categorie,
+        commune: form.origine,
+        lot: form.lot,
+        dateProduction: form.dateProduction,
+        dateExpiration: form.dateExpiration,
+        is_available: form.statut === 'actif',
+        ...(imageUrl && { images: [imageUrl] })
+      });
       navigate('/producteur/produits');
-    }, 1000);
+    } catch (err) {
+      console.error('Erreur modification:', err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   if (loading) return (
@@ -184,7 +206,11 @@ export default function ModifierProduit() {
                   <input type="number" step="0.01" name="prix" value={form.prix} onChange={handleChange}
                     className={inputClass(errors.prix)} placeholder="0.00" />
                   <select name="unite" value={form.unite} onChange={handleChange} className="form-input">
-                    {['kg','g','L','pièce','pot','botte'].map(u => <option key={u}>{u}</option>)}
+                    <option value="kg">kg</option>
+                    <option value="litre">litre</option>
+                    <option value="sachet">sachet</option>
+                    <option value="botte">botte</option>
+                    <option value="unite">unité</option>
                   </select>
                 </div>
                 {errors.prix && <span className="form-error">{errors.prix}</span>}
@@ -200,12 +226,11 @@ export default function ModifierProduit() {
               <div className="form-field">
                 <label className="form-label">Catégorie</label>
                 <select name="categorie" value={form.categorie} onChange={handleChange} className="form-input">
+                  <option value="cereales">Céréales</option>
                   <option value="legumes">Légumes</option>
-                  <option value="fruits">Fruits</option>
-                  <option value="produits_laitiers">Produits laitiers</option>
-                  <option value="viandes">Viandes</option>
-                  <option value="miel_confitures">Miel & Confitures</option>
-                  <option value="boissons">Boissons</option>
+                  <option value="tubercules">Tubercules</option>
+                  <option value="racineshuile">Racines & Huiles</option>
+                  <option value="oleagineux">Oléagineux</option>
                   <option value="autres">Autres</option>
                 </select>
               </div>

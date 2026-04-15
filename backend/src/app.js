@@ -3,13 +3,12 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import authRoutes from './routes/authRoutes.js'
 import userRoutes from './routes/userRoutes.js'
-
 import producteurRoutes from './routes/producteurRoutes.js'
-
 import productRoutes from './routes/productRoutes.js'
 import cartRoutes from './routes/cartRoutes.js'
 import orderRoutes from './routes/orderRoutes.js'
 import traceabilityRoutes from './routes/traceabilityRoutes.js'
+import uploadRoutes from './routes/uploadRoutes.js'
 
 dotenv.config()
 
@@ -39,6 +38,8 @@ app.use(`${API_PREFIX}/products`, productRoutes)
 app.use(`${API_PREFIX}/cart`, cartRoutes)
 app.use(`${API_PREFIX}/orders`, orderRoutes)
 app.use(`${API_PREFIX}/traceability`, traceabilityRoutes)
+app.use(`${API_PREFIX}/producteurs`, producteurRoutes)
+app.use(`${API_PREFIX}/upload`, uploadRoutes)
 
 
 // Route de santé

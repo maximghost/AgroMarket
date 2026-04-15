@@ -15,10 +15,10 @@ const Login = () => {
     password: '',
   });
 
-  // Si déjà connecté, rediriger vers le catalogue
+  // Si déjà connecté, rediriger selon le rôle
   useEffect(() => {
     if (user) {
-      navigate('/catalogue');
+      navigate(user.role === 'producteur' ? '/producteur' : '/catalogue');
     }
   }, [user, navigate]);
 
@@ -57,9 +57,11 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border border-gray-100">
-        <div className="text-center">
-          <h2 className="text-3xl font-bold text-green-700">AgroMarket</h2>
-          <p className="mt-2 text-gray-600">Heureux de vous revoir !</p>
+        <div className="text-center">     
+            <h3 className="text-2xl font-bold mb-6">
+              <span className="text-green-600">AGRO</span>
+              <span className="text-orange-500">MARKET</span>
+            </h3>          <p className="mt-2 text-gray-600">Heureux de vous revoir !</p>
         </div>
 
         {/* Message d'erreur */}

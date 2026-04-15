@@ -278,50 +278,79 @@ const ProductDetailModal = ({ productId, isOpen, onClose }) => {
                 </div>
               )}
 
-              {/* Traçabilité */}
-              {product?.traceability_id && (
+              {/* Traçabilité — données de base toujours affichées si disponibles */}
+              {(product?.lot || product?.dateProduction || product?.commune || product?.traceability_id) && (
                 <div className="pt-4 border-t">
                   <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
                     <AlertCircle size={20} className="text-green-700" />
                     Traçabilité
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-green-50 p-4 rounded-lg">
-                    {product.traceability_id.farm_name && (
+                    {product.commune && (
                       <div>
-                        <p className="text-gray-600 text-sm">Ferme</p>
+                        <p className="text-gray-600 text-sm">Lieu de production</p>
+                        <p className="font-semibold">{product.commune}</p>
+                      </div>
+                    )}
+                    {product.lot && (
+                      <div>
+                        <p className="text-gray-600 text-sm">Numéro de lot</p>
+                        <p className="font-semibold">{product.lot}</p>
+                      </div>
+                    )}
+                    {product.dateProduction && (
+                      <div>
+                        <p className="text-gray-600 text-sm">Date de production</p>
+                        <p className="font-semibold">{new Date(product.dateProduction).toLocaleDateString('fr-FR')}</p>
+                      </div>
+                    )}
+                    {product.dateExpiration && (
+                      <div>
+                        <p className="text-gray-600 text-sm">Date d'expiration</p>
+                        <p className="font-semibold">{new Date(product.dateExpiration).toLocaleDateString('fr-FR')}</p>
+                      </div>
+                    )}
+
+                    {/* Données de la fiche Traceability si elle existe */}
+                    {product.traceability_id?.farm_name && (
+                      <div>
+                        <p className="text-gray-600 text-sm">Ferme / Exploitation</p>
                         <p className="font-semibold">{product.traceability_id.farm_name}</p>
                       </div>
                     )}
-                    {product.traceability_id.cultivation_method && (
+                    {product.traceability_id?.cultivation_method && (
                       <div>
                         <p className="text-gray-600 text-sm">Méthode de culture</p>
                         <p className="font-semibold capitalize">{product.traceability_id.cultivation_method}</p>
                       </div>
                     )}
-                    {product.traceability_id.harvest_date && (
+                    {product.traceability_id?.harvest_date && (
                       <div>
                         <p className="text-gray-600 text-sm">Date de récolte</p>
                         <p className="font-semibold">
-                          {new Date(product.traceability_id.harvest_date).toLocaleDateString()}
+                          {new Date(product.traceability_id.harvest_date).toLocaleDateString('fr-FR')}
                         </p>
                       </div>
                     )}
-                    <div>
-                      <p className="text-gray-600 text-sm">Pesticides</p>
-                      <p className={`font-semibold ${product.traceability_id.pesticides_used ? 'text-red-600' : 'text-green-600'}`}>
-                        {product.traceability_id.pesticides_used ? '⚠️ Utilisés' : '✓ Non utilisés'}
-                      </p>
-                    </div>
-                    {product.traceability_id.is_verified && (
+                    {product.traceability_id && (
                       <div>
-                        <p className="text-gray-600 text-sm">Vérification</p>
-                        <p className="font-semibold text-green-700">✓ Validé</p>
+                        <p className="text-gray-600 text-sm">Pesticides</p>
+                        <p className={`font-semibold ${product.traceability_id.pesticides_used ? 'text-red-600' : 'text-green-600'}`}>
+                          {product.traceability_id.pesticides_used ? '⚠️ Utilisés' : '✓ Non utilisés'}
+                        </p>
+                      </div>
+                    )}
+                    {product.traceability_id?.is_verified && (
+                      <div className="md:col-span-2">
+                        <p className="font-semibold text-green-700 flex items-center gap-1">
+                          ✓ Fiche vérifiée par AgroMarket
+                        </p>
                       </div>
                     )}
                   </div>
 
                   {/* Certifications */}
-                  {product.traceability_id.certifications?.length > 0 && (
+                  {product.traceability_id?.certifications?.length > 0 && (
                     <div className="mt-4">
                       <p className="font-semibold mb-2">Certifications</p>
                       <div className="space-y-2">
@@ -330,9 +359,7 @@ const ProductDetailModal = ({ productId, isOpen, onClose }) => {
                             <p className="font-semibold">{cert.name}</p>
                             <p className="text-sm text-gray-600">{cert.issuer}</p>
                             {cert.issued_at && (
-                              <p className="text-xs text-gray-500">
-                                {new Date(cert.issued_at).toLocaleDateString()}
-                              </p>
+                              <p className="text-xs text-gray-500">{new Date(cert.issued_at).toLocaleDateString('fr-FR')}</p>
                             )}
                           </div>
                         ))}
@@ -341,7 +368,7 @@ const ProductDetailModal = ({ productId, isOpen, onClose }) => {
                   )}
 
                   {/* Étapes de traitement */}
-                  {product.traceability_id.processing_steps?.length > 0 && (
+                  {product.traceability_id?.processing_steps?.length > 0 && (
                     <div className="mt-4">
                       <p className="font-semibold mb-2">Étapes de traitement</p>
                       <div className="space-y-2">
@@ -350,9 +377,7 @@ const ProductDetailModal = ({ productId, isOpen, onClose }) => {
                             <p className="font-semibold">{step.step}</p>
                             <p className="text-sm text-gray-700">{step.description}</p>
                             {step.date && (
-                              <p className="text-xs text-gray-500">
-                                {new Date(step.date).toLocaleDateString()}
-                              </p>
+                              <p className="text-xs text-gray-500">{new Date(step.date).toLocaleDateString('fr-FR')}</p>
                             )}
                           </div>
                         ))}

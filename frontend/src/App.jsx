@@ -1,7 +1,7 @@
+import { Routes, Route } from 'react-router-dom';
 import Catalogue from './pages/Catalogue'
 import CartPage from './pages/CartPage'
 import OrderConfirmationPage from './pages/OrderConfirmationPage'
-import { Routes, Route } from 'react-router-dom';
 import LayoutProducteur from './layouts/LayoutProducteur';
 import DashboardProducteur from './pages/producteur/DashboardProducteur';
 import MesProduits from './pages/producteur/MesProduits';
